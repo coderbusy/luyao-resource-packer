@@ -1,5 +1,9 @@
 # LuYao.ResourcePacker
 
+[![NuGet Version](https://img.shields.io/nuget/v/LuYao.ResourcePacker)](https://www.nuget.org/packages/LuYao.ResourcePacker/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/LuYao.ResourcePacker)](https://www.nuget.org/packages/LuYao.ResourcePacker/)
+[![GitHub Stars](https://img.shields.io/github/stars/coderbusy/luyao-resource-packer?style=social)](https://github.com/coderbusy/luyao-resource-packer/stargazers)
+
 LuYao.ResourcePacker is a .NET library for packaging and accessing resource files during build time and runtime.
 
 ## Features
@@ -13,11 +17,22 @@ LuYao.ResourcePacker is a .NET library for packaging and accessing resource file
 
 ## Installation
 
-Install the NuGet package:
-
-```bash
-dotnet add package LuYao.ResourcePacker
+### Package Manager Console
 ```
+Install-Package LuYao.ResourcePacker.MSBuild
+```
+
+### .NET CLI
+```bash
+dotnet add package LuYao.ResourcePacker.MSBuild
+```
+
+### PackageReference
+```xml
+<PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="1.0.0" />
+```
+
+> **Note**: Installing `LuYao.ResourcePacker.MSBuild` will automatically include the core `LuYao.ResourcePacker` library as a dependency.
 
 ## Usage
 

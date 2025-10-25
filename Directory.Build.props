@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <!-- Version Information -->
+    <Version>1.0.0</Version>
+    
+    <!-- Common Package Metadata -->
+    <Authors>Soar360</Authors>
+    <Company>Soar360</Company>
+    <Copyright>Copyright © 2025 Soar360</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/coderbusy/luyao-resource-packer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/coderbusy/luyao-resource-packer</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>resource-packer;msbuild;dotnet;resource-management</PackageTags>
+    
+    <!-- Build Configuration -->
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>
