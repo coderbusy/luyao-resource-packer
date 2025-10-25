@@ -27,7 +27,38 @@ namespace LuYao.ResourcePacker
 
         private void LoadIndex()
         {
-            // TODO: Implement index loading from file header
+            using var reader = new BinaryReader(_fileStream, System.Text.Encoding.UTF8, leaveOpen: true);
+            
+            // Read version number
+            var version = reader.ReadByte();
+            if (version != ResourcePacker.FormatVersion)
+            {
+                throw new InvalidDataException($"Unsupported file version: {version}. Expected version {ResourcePacker.FormatVersion}.");
+            }
+
+            // Read resource count
+            var count = reader.ReadInt32();
+
+            // Read index entries (key and length only)
+            var indexEntries = new List<(string Key, int Length)>();
+            for (int i = 0; i < count; i++)
+            {
+                var key = reader.ReadString();
+                var length = reader.ReadInt32();
+                indexEntries.Add((key, length));
+            }
+
+            // Calculate offsets based on the current position
+            long currentOffset = _fileStream.Position;
+            foreach (var (key, length) in indexEntries)
+            {
+                _resourceIndex[key] = new ResourceEntry
+                {
+                    Offset = currentOffset,
+                    Length = length
+                };
+                currentOffset += length;
+            }
         }
 
         /// <summary>

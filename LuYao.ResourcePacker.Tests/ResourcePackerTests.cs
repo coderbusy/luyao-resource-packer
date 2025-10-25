@@ -105,6 +105,82 @@ namespace LuYao.ResourcePacker.Tests
             Assert.Empty(reader.ResourceKeys);
         }
 
+        [Fact]
+        public void PackResources_MultipleTimes_ShouldProduceDeterministicOutput()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var outputPath1 = Path.Combine(_tempDirectory, "test1.dat");
+            var outputPath2 = Path.Combine(_tempDirectory, "test2.dat");
+            
+            var packer1 = new ResourcePacker(sourceDir, "*.res.*");
+            var packer2 = new ResourcePacker(sourceDir, "*.res.*");
+
+            // Act
+            packer1.PackResources(outputPath1);
+            packer2.PackResources(outputPath2);
+
+            // Assert - Files should be byte-for-byte identical
+            var bytes1 = File.ReadAllBytes(outputPath1);
+            var bytes2 = File.ReadAllBytes(outputPath2);
+            Assert.Equal(bytes1, bytes2);
+        }
+
+        [Fact]
+        public async Task ResourceKeys_ShouldBeSorted()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+
+            // Act
+            packer.PackResources(_outputPath);
+
+            // Assert
+            using var reader = new ResourcePackageReader(_outputPath);
+            var keys = reader.ResourceKeys.ToList();
+            var sortedKeys = keys.OrderBy(k => k).ToList();
+            
+            Assert.Equal(sortedKeys, keys);
+        }
+
+        [Fact]
+        public void PackedFile_ShouldHaveCorrectFormat()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+
+            // Act
+            packer.PackResources(_outputPath);
+
+            // Assert - Verify binary format
+            using var fs = new FileStream(_outputPath, FileMode.Open, FileAccess.Read);
+            using var reader = new BinaryReader(fs);
+            
+            // First byte should be version 1
+            var version = reader.ReadByte();
+            Assert.Equal((byte)1, version);
+            
+            // Next 4 bytes should be resource count
+            var count = reader.ReadInt32();
+            Assert.True(count > 0, "Should have at least one resource");
+            
+            // Read index entries - should be sorted
+            var keys = new System.Collections.Generic.List<string>();
+            for (int i = 0; i < count; i++)
+            {
+                var key = reader.ReadString();
+                var length = reader.ReadInt32();
+                keys.Add(key);
+                Assert.True(length > 0, $"Resource '{key}' should have positive length");
+            }
+            
+            // Verify keys are sorted
+            var sortedKeys = keys.OrderBy(k => k).ToList();
+            Assert.Equal(sortedKeys, keys);
+        }
+
         [Theory]
         [InlineData(null, "*.res.*")]
         [InlineData("", "*.res.*")]
