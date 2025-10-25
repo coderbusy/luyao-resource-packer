@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{B3
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleProject", "examples\ExampleProject\ExampleProject.csproj", "{B4FEF227-F9DB-4894-84D2-EB71A8C8C3AA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuYao.ResourcePacker.SourceGenerator", "LuYao.ResourcePacker.SourceGenerator\LuYao.ResourcePacker.SourceGenerator.csproj", "{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,18 @@ Global
 		{B4FEF227-F9DB-4894-84D2-EB71A8C8C3AA}.Release|x64.Build.0 = Release|Any CPU
 		{B4FEF227-F9DB-4894-84D2-EB71A8C8C3AA}.Release|x86.ActiveCfg = Release|Any CPU
 		{B4FEF227-F9DB-4894-84D2-EB71A8C8C3AA}.Release|x86.Build.0 = Release|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Debug|x64.Build.0 = Debug|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Debug|x86.Build.0 = Debug|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Release|x64.ActiveCfg = Release|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Release|x64.Build.0 = Release|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Release|x86.ActiveCfg = Release|Any CPU
+		{76BFAFBB-3C07-4268-82C9-CFC97A12ED1A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

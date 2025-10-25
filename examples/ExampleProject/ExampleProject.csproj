@@ -14,6 +14,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\LuYao.ResourcePacker\LuYao.ResourcePacker.csproj" />
     <ProjectReference Include="..\..\LuYao.ResourcePacker.MSBuild\LuYao.ResourcePacker.MSBuild.csproj" />
+    <ProjectReference Include="..\..\LuYao.ResourcePacker.SourceGenerator\LuYao.ResourcePacker.SourceGenerator.csproj" 
+                      OutputItemType="Analyzer" 
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +33,31 @@
              AssemblyFile="..\..\LuYao.ResourcePacker.MSBuild\bin\$(Configuration)\netstandard2.0\LuYao.ResourcePacker.MSBuild.dll" />
   
   <Import Project="..\..\LuYao.ResourcePacker.MSBuild\build\LuYao.ResourcePacker.MSBuild.props" />
-  <Import Project="..\..\LuYao.ResourcePacker.MSBuild\build\LuYao.ResourcePacker.MSBuild.targets" />
+  
+  <!-- Override the targets to use local source generator for development -->
+  <Target Name="PackResources" BeforeTargets="AssignTargetPaths" Condition="'$(ResourcePackerEnabled)' == 'true'">
+    <PropertyGroup>
+      <ResourcePackerOutputFileName Condition="'$(ResourcePackerOutputFileName)' == ''">$(AssemblyName).dat</ResourcePackerOutputFileName>
+    </PropertyGroup>
+    <ResourcePackerTask
+      ProjectDir="$(ProjectDir)"
+      OutputPath="$(OutputPath)"
+      AssemblyName="$(AssemblyName)"
+      ResourcePattern="$(ResourcePackerPattern)"
+      OutputFileName="$(ResourcePackerOutputFileName)" />
+      
+    <!-- Add .dat file to None so it gets copied to referencing projects -->
+    <ItemGroup>
+      <None Include="$(OutputPath)$(ResourcePackerOutputFileName)">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <Link>$(ResourcePackerOutputFileName)</Link>
+      </None>
+    </ItemGroup>
+  </Target>
+
+  <!-- Add resource files as AdditionalFiles for source generator -->
+  <ItemGroup>
+    <AdditionalFiles Include="Resources\**\*.res.*" Visible="false" />
+  </ItemGroup>
 
 </Project>
