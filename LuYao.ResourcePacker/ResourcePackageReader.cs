@@ -124,7 +124,16 @@ namespace LuYao.ResourcePacker
 
             var buffer = new byte[entry.Length];
             _fileStream.Seek(entry.Offset, SeekOrigin.Begin);
-            _fileStream.Read(buffer, 0, buffer.Length);
+            
+            int totalRead = 0;
+            while (totalRead < entry.Length)
+            {
+                int bytesRead = _fileStream.Read(buffer, totalRead, entry.Length - totalRead);
+                if (bytesRead == 0)
+                    throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
+                totalRead += bytesRead;
+            }
+            
             return buffer;
         }
 
@@ -164,8 +173,8 @@ namespace LuYao.ResourcePacker
             if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
-            var bytes = ReadResource(resourceKey);
-            return new MemoryStream(bytes, writable: false);
+            // Create a SubStream wrapper that provides a read-only view of a portion of the file
+            return new SubStream(_fileStream, entry.Offset, entry.Length);
         }
 
         /// <summary>
@@ -185,5 +194,96 @@ namespace LuYao.ResourcePacker
     {
         public long Offset { get; set; }
         public int Length { get; set; }
+    }
+
+    /// <summary>
+    /// A stream wrapper that provides a read-only view of a portion of another stream.
+    /// </summary>
+    internal class SubStream : Stream
+    {
+        private readonly Stream _baseStream;
+        private readonly long _offset;
+        private readonly long _length;
+        private long _position;
+
+        public SubStream(Stream baseStream, long offset, long length)
+        {
+            _baseStream = baseStream ?? throw new ArgumentNullException(nameof(baseStream));
+            _offset = offset;
+            _length = length;
+            _position = 0;
+        }
+
+        public override bool CanRead => true;
+        public override bool CanSeek => true;
+        public override bool CanWrite => false;
+        public override long Length => _length;
+
+        public override long Position
+        {
+            get => _position;
+            set
+            {
+                if (value < 0 || value > _length)
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                _position = value;
+            }
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException(nameof(offset));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            if (buffer.Length - offset < count)
+                throw new ArgumentException("Invalid offset/count combination");
+
+            long remaining = _length - _position;
+            if (remaining <= 0)
+                return 0;
+
+            int toRead = (int)Math.Min(count, remaining);
+            
+            _baseStream.Seek(_offset + _position, SeekOrigin.Begin);
+            int bytesRead = _baseStream.Read(buffer, offset, toRead);
+            _position += bytesRead;
+            
+            return bytesRead;
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            long newPosition = origin switch
+            {
+                SeekOrigin.Begin => offset,
+                SeekOrigin.Current => _position + offset,
+                SeekOrigin.End => _length + offset,
+                _ => throw new ArgumentException("Invalid seek origin", nameof(origin))
+            };
+
+            if (newPosition < 0 || newPosition > _length)
+                throw new ArgumentOutOfRangeException(nameof(offset));
+
+            _position = newPosition;
+            return _position;
+        }
+
+        public override void Flush()
+        {
+            // Read-only stream, nothing to flush
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotSupportedException("Cannot set length on a read-only stream.");
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            throw new NotSupportedException("Cannot write to a read-only stream.");
+        }
     }
 }
