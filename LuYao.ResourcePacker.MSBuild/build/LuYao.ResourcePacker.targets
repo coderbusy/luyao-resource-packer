@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="LuYao.ResourcePacker.MSBuild.ResourcePackerTask" 
+             AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\LuYao.ResourcePacker.MSBuild.dll" />
+
+  <Target Name="PackResources" BeforeTargets="CopyFilesToOutputDirectory" Condition="'$(ResourcePackerEnabled)' == 'true'">
+    <ResourcePackerTask
+      ProjectDir="$(ProjectDir)"
+      OutputPath="$(OutputPath)"
+      AssemblyName="$(AssemblyName)"
+      ResourcePattern="$(ResourcePackerPattern)"
+      OutputFileName="$(ResourcePackerOutputFileName)" />
+  </Target>
+</Project>

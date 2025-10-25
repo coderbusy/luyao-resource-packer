@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Version>1.0.0</Version>
+    <Authors>Soar360</Authors>
+    <Description>MSBuild tasks for LuYao.ResourcePacker</Description>
+    <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="17.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.0.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LuYao.ResourcePacker\LuYao.ResourcePacker.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\*.props" PackagePath="build\" />
+    <Content Include="build\*.targets" PackagePath="build\" />
+  </ItemGroup>
+
+</Project>
