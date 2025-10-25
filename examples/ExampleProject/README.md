@@ -2,6 +2,8 @@
 
 This is a console application demonstrating how to use the LuYao.ResourcePacker library.
 
+> **Note**: This example is part of the LuYao.ResourcePacker repository and uses project references to demonstrate the library from source. If you're an external user consuming the NuGet package, you only need to install the package and configure the MSBuild properties - the build integration happens automatically. See the [Installation section](#installation-for-external-projects) below.
+
 ## What This Example Demonstrates
 
 1. **Resource File Setup**: Place resource files in a `Resources` folder with the `.res.` pattern in the filename (e.g., `message.res.json`, `config.res.json`, `template.res.html`)
@@ -89,6 +91,21 @@ Template content (first 200 characters):
 
 === Example completed successfully ===
 ```
+
+## Installation for External Projects
+
+If you're creating your own project using LuYao.ResourcePacker, follow these steps:
+
+1. Install the NuGet package:
+   ```bash
+   dotnet add package LuYao.ResourcePacker
+   ```
+
+2. Add resource files with the `.res.` pattern to your project
+
+3. The MSBuild integration will automatically pack your resources during build
+
+4. Use the `ResourcePackageReader` class to access resources at runtime (see `Program.cs` for examples)
 
 ## Configuration
 
