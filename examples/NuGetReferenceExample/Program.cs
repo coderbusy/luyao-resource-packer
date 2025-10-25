@@ -1,9 +1,11 @@
+using System.Reflection;
 using LuYao.ResourcePacker;
 
 // This example demonstrates using LuYao.ResourcePacker.MSBuild via NuGet package reference
 // The .dat file is automatically generated during build
 
-var datFile = Path.Combine(AppContext.BaseDirectory, "NuGetReferenceExample.dat");
+var assemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? "NuGetReferenceExample";
+var datFile = Path.Combine(AppContext.BaseDirectory, $"{assemblyName}.dat");
 
 if (!File.Exists(datFile))
 {

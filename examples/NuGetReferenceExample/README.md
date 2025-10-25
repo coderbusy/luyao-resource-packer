@@ -71,3 +71,5 @@ The main `ExampleProject` uses **project references** to LuYao.ResourcePacker.MS
 
 When using NuGet packages, the MSBuild props and targets files must be named exactly as `<PackageId>.props` and `<PackageId>.targets` to be automatically imported. This example validates that the naming is correct.
 
+For more information about NuGet MSBuild conventions, see the [official documentation on creating MSBuild props/targets packages](https://learn.microsoft.com/en-us/nuget/create-packages/creating-a-package#include-msbuild-props-and-targets-in-a-package).
+
