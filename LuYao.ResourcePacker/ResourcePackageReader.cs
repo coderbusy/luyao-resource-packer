@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace LuYao.ResourcePacker
@@ -86,7 +87,7 @@ namespace LuYao.ResourcePacker
         }
 
         /// <summary>
-        /// Reads a resource as a string asynchronously.
+        /// Reads a resource as a string asynchronously using UTF-8 encoding.
         /// </summary>
         /// <param name="resourceKey">The key of the resource to read.</param>
         /// <returns>A task that represents the asynchronous read operation.</returns>
@@ -96,6 +97,80 @@ namespace LuYao.ResourcePacker
             return System.Text.Encoding.UTF8.GetString(bytes);
         }
 
+        /// <summary>
+        /// Reads a resource as a string asynchronously using the specified encoding.
+        /// </summary>
+        /// <param name="resourceKey">The key of the resource to read.</param>
+        /// <param name="encoding">The encoding to use when converting bytes to string.</param>
+        /// <returns>A task that represents the asynchronous read operation.</returns>
+        public async Task<string> ReadResourceAsStringAsync(string resourceKey, Encoding encoding)
+        {
+            var bytes = await ReadResourceAsync(resourceKey);
+            return encoding.GetString(bytes);
+        }
+
+        /// <summary>
+        /// Reads a resource as a byte array synchronously.
+        /// </summary>
+        /// <param name="resourceKey">The key of the resource to read.</param>
+        /// <returns>The resource data as a byte array.</returns>
+        public byte[] ReadResource(string resourceKey)
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(ResourcePackageReader));
+
+            if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
+                throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
+
+            var buffer = new byte[entry.Length];
+            _fileStream.Seek(entry.Offset, SeekOrigin.Begin);
+            _fileStream.Read(buffer, 0, buffer.Length);
+            return buffer;
+        }
+
+        /// <summary>
+        /// Reads a resource as a string synchronously using UTF-8 encoding.
+        /// </summary>
+        /// <param name="resourceKey">The key of the resource to read.</param>
+        /// <returns>The resource data as a string.</returns>
+        public string ReadResourceAsString(string resourceKey)
+        {
+            var bytes = ReadResource(resourceKey);
+            return System.Text.Encoding.UTF8.GetString(bytes);
+        }
+
+        /// <summary>
+        /// Reads a resource as a string synchronously using the specified encoding.
+        /// </summary>
+        /// <param name="resourceKey">The key of the resource to read.</param>
+        /// <param name="encoding">The encoding to use when converting bytes to string.</param>
+        /// <returns>The resource data as a string.</returns>
+        public string ReadResourceAsString(string resourceKey, Encoding encoding)
+        {
+            var bytes = ReadResource(resourceKey);
+            return encoding.GetString(bytes);
+        }
+
+        /// <summary>
+        /// Gets a read-only stream for the specified resource.
+        /// </summary>
+        /// <param name="resourceKey">The key of the resource to read.</param>
+        /// <returns>A read-only stream containing the resource data.</returns>
+        public Stream GetStream(string resourceKey)
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(ResourcePackageReader));
+
+            if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
+                throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
+
+            var bytes = ReadResource(resourceKey);
+            return new MemoryStream(bytes, writable: false);
+        }
+
+        /// <summary>
+        /// Releases the resources used by the <see cref="ResourcePackageReader"/>.
+        /// </summary>
         public void Dispose()
         {
             if (!_disposed)

@@ -1,5 +1,8 @@
 using Xunit;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -193,6 +196,160 @@ namespace LuYao.ResourcePacker.Tests
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => 
                 new ResourcePacker(sourceDirectory, pattern));
+        }
+
+        [Fact]
+        public async Task ReadResourceAsStringAsync_WithEncoding_ShouldUseProvidedEncoding()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            packer.PackResources(_outputPath);
+
+            // Act
+            using var reader = new ResourcePackageReader(_outputPath);
+            var content = await reader.ReadResourceAsStringAsync("greeting", Encoding.UTF8);
+
+            // Assert
+            Assert.Contains("Hello from resource file!", content);
+        }
+
+        [Fact]
+        public void ReadResource_ShouldReturnByteArraySynchronously()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            packer.PackResources(_outputPath);
+
+            // Act
+            using var reader = new ResourcePackageReader(_outputPath);
+            var bytes = reader.ReadResource("greeting");
+
+            // Assert
+            Assert.NotNull(bytes);
+            Assert.True(bytes.Length > 0);
+            var content = Encoding.UTF8.GetString(bytes);
+            Assert.Contains("Hello from resource file!", content);
+        }
+
+        [Fact]
+        public void ReadResourceAsString_ShouldReturnStringSynchronously()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            packer.PackResources(_outputPath);
+
+            // Act
+            using var reader = new ResourcePackageReader(_outputPath);
+            var content = reader.ReadResourceAsString("greeting");
+
+            // Assert
+            Assert.Contains("Hello from resource file!", content);
+        }
+
+        [Fact]
+        public void ReadResourceAsString_WithEncoding_ShouldUseProvidedEncoding()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            packer.PackResources(_outputPath);
+
+            // Act
+            using var reader = new ResourcePackageReader(_outputPath);
+            var content = reader.ReadResourceAsString("test", Encoding.UTF8);
+
+            // Assert
+            Assert.Contains("Hello, World!", content);
+        }
+
+        [Fact]
+        public void GetStream_ShouldReturnReadOnlyStream()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            packer.PackResources(_outputPath);
+
+            // Act
+            using var reader = new ResourcePackageReader(_outputPath);
+            using var stream = reader.GetStream("greeting");
+
+            // Assert
+            Assert.NotNull(stream);
+            Assert.True(stream.CanRead);
+            Assert.False(stream.CanWrite);
+            
+            using var streamReader = new StreamReader(stream);
+            var content = streamReader.ReadToEnd();
+            Assert.Contains("Hello from resource file!", content);
+        }
+
+        [Fact]
+        public void GetStream_WithInvalidKey_ShouldThrowException()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            packer.PackResources(_outputPath);
+
+            // Act & Assert
+            using var reader = new ResourcePackageReader(_outputPath);
+            Assert.Throws<KeyNotFoundException>(() => 
+                reader.GetStream("non_existent_key"));
+        }
+
+        [Fact]
+        public void ReadResourceSync_AfterDispose_ShouldThrowException()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            packer.PackResources(_outputPath);
+
+            // Act
+            var reader = new ResourcePackageReader(_outputPath);
+            reader.Dispose();
+
+            // Assert
+            Assert.Throws<ObjectDisposedException>(() => 
+                reader.ReadResource("test"));
+        }
+
+        [Fact]
+        public void ReadResourceAsStringSync_AfterDispose_ShouldThrowException()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            packer.PackResources(_outputPath);
+
+            // Act
+            var reader = new ResourcePackageReader(_outputPath);
+            reader.Dispose();
+
+            // Assert
+            Assert.Throws<ObjectDisposedException>(() => 
+                reader.ReadResourceAsString("test"));
+        }
+
+        [Fact]
+        public void GetStream_AfterDispose_ShouldThrowException()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            packer.PackResources(_outputPath);
+
+            // Act
+            var reader = new ResourcePackageReader(_outputPath);
+            reader.Dispose();
+
+            // Assert
+            Assert.Throws<ObjectDisposedException>(() => 
+                reader.GetStream("test"));
         }
 
         public void Dispose()
