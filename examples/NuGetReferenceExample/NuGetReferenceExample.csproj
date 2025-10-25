@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ResourcePackerEnabled>true</ResourcePackerEnabled>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LuYao.ResourcePacker" Version="1.0.0" />
+    <PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Resources\**\*.res.*" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+</Project>

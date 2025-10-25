@@ -1,0 +1,1 @@
+This is a text resource file for testing NuGet package reference.
