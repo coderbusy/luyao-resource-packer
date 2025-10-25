@@ -14,7 +14,7 @@
       ResourcePattern="$(ResourcePackerPattern)"
       OutputFileName="$(ResourcePackerOutputFileName)" />
       
-    <!-- Add .dat file to None so it gets copied -->
+    <!-- Add .dat file to None so it gets copied to referencing projects -->
     <ItemGroup>
       <None Include="$(OutputPath)$(ResourcePackerOutputFileName)">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
