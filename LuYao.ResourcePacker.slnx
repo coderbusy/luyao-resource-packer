@@ -1,0 +1,18 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/examples/">
+    <Project Path="examples/App1/App1.csproj" />
+    <Project Path="examples/ExampleProject/ExampleProject.csproj" />
+    <Project Path="examples/Lib1/Lib1.csproj" />
+    <Project Path="examples/Lib2/Lib2.csproj" />
+    <Project Path="examples/Lib3/Lib3.csproj" />
+  </Folder>
+  <Project Path="LuYao.ResourcePacker.MSBuild/LuYao.ResourcePacker.MSBuild.csproj" />
+  <Project Path="LuYao.ResourcePacker.SourceGenerator/LuYao.ResourcePacker.SourceGenerator.csproj" />
+  <Project Path="LuYao.ResourcePacker.Tests/LuYao.ResourcePacker.Tests.csproj" />
+  <Project Path="LuYao.ResourcePacker/LuYao.ResourcePacker.csproj" />
+</Solution>
