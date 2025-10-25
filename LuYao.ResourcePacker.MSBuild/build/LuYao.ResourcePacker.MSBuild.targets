@@ -3,7 +3,7 @@
   <UsingTask TaskName="LuYao.ResourcePacker.MSBuild.ResourcePackerTask" 
              AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\LuYao.ResourcePacker.MSBuild.dll" />
 
-  <Target Name="PackResources" BeforeTargets="CopyFilesToOutputDirectory" Condition="'$(ResourcePackerEnabled)' == 'true'">
+  <Target Name="PackResources" BeforeTargets="AssignTargetPaths" Condition="'$(ResourcePackerEnabled)' == 'true'">
     <PropertyGroup>
       <ResourcePackerOutputFileName Condition="'$(ResourcePackerOutputFileName)' == ''">$(AssemblyName).dat</ResourcePackerOutputFileName>
     </PropertyGroup>
@@ -13,5 +13,13 @@
       AssemblyName="$(AssemblyName)"
       ResourcePattern="$(ResourcePackerPattern)"
       OutputFileName="$(ResourcePackerOutputFileName)" />
+      
+    <!-- Add .dat file to None so it gets copied to referencing projects -->
+    <ItemGroup>
+      <None Include="$(OutputPath)$(ResourcePackerOutputFileName)">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <Link>$(ResourcePackerOutputFileName)</Link>
+      </None>
+    </ItemGroup>
   </Target>
 </Project>

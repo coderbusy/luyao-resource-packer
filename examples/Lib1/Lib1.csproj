@@ -1,14 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
     <ResourcePackerEnabled>true</ResourcePackerEnabled>
     <ResourcePackerPattern>*.res.*</ResourcePackerPattern>
-    <ResourcePackerOutputFileName>$(AssemblyName).dat</ResourcePackerOutputFileName>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,12 +18,7 @@
     <None Include="Resources\**\*.res.*" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
-  <!-- 
-    NOTE: This example uses project references to demonstrate the library from source.
-    For external projects consuming the NuGet package, the MSBuild targets are automatically
-    imported and you don't need the UsingTask and Target import below.
-    See the main README.md for instructions on using the NuGet package.
-  -->
+  <!-- For development with project references, manually import and override assembly path -->
   <UsingTask TaskName="LuYao.ResourcePacker.MSBuild.ResourcePackerTask" 
              AssemblyFile="..\..\LuYao.ResourcePacker.MSBuild\bin\$(Configuration)\netstandard2.0\LuYao.ResourcePacker.MSBuild.dll" />
   
