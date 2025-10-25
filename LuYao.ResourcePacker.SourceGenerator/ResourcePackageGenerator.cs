@@ -135,6 +135,20 @@ namespace LuYao.ResourcePacker.SourceGenerator
             sb.AppendLine("        public static ResourcePackageReader Reader => _reader.Value;");
             sb.AppendLine();
             
+            // Add ContainsKey helper methods for each resource
+            foreach (var key in resourceKeys)
+            {
+                var safeKey = MakeSafeIdentifier(key);
+                sb.AppendLine($"        /// <summary>");
+                sb.AppendLine($"        /// Determines whether the '{key}' resource exists in the package.");
+                sb.AppendLine($"        /// </summary>");
+                sb.AppendLine($"        public static bool Contains{Capitalize(safeKey)}()");
+                sb.AppendLine($"        {{");
+                sb.AppendLine($"            return Reader.ContainsKey(Keys.{safeKey});");
+                sb.AppendLine($"        }}");
+                sb.AppendLine();
+            }
+            
             // Add helper methods for each resource
             foreach (var key in resourceKeys)
             {
@@ -142,6 +156,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 var methodName = $"Read{Capitalize(safeKey)}";
                 var asyncMethodName = $"Read{Capitalize(safeKey)}Async";
                 
+                // Async byte array method
                 sb.AppendLine($"        /// <summary>");
                 sb.AppendLine($"        /// Reads the '{key}' resource as a byte array asynchronously.");
                 sb.AppendLine($"        /// </summary>");
@@ -151,12 +166,65 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 sb.AppendLine($"        }}");
                 sb.AppendLine();
                 
+                // Sync byte array method
                 sb.AppendLine($"        /// <summary>");
-                sb.AppendLine($"        /// Reads the '{key}' resource as a string asynchronously.");
+                sb.AppendLine($"        /// Reads the '{key}' resource as a byte array synchronously.");
+                sb.AppendLine($"        /// </summary>");
+                sb.AppendLine($"        public static byte[] {methodName}()");
+                sb.AppendLine($"        {{");
+                sb.AppendLine($"            return Reader.ReadResource(Keys.{safeKey});");
+                sb.AppendLine($"        }}");
+                sb.AppendLine();
+                
+                // Async string method (UTF-8)
+                sb.AppendLine($"        /// <summary>");
+                sb.AppendLine($"        /// Reads the '{key}' resource as a string asynchronously using UTF-8 encoding.");
                 sb.AppendLine($"        /// </summary>");
                 sb.AppendLine($"        public static System.Threading.Tasks.Task<string> {asyncMethodName}AsString()");
                 sb.AppendLine($"        {{");
                 sb.AppendLine($"            return Reader.ReadResourceAsStringAsync(Keys.{safeKey});");
+                sb.AppendLine($"        }}");
+                sb.AppendLine();
+                
+                // Async string method (with encoding)
+                sb.AppendLine($"        /// <summary>");
+                sb.AppendLine($"        /// Reads the '{key}' resource as a string asynchronously using the specified encoding.");
+                sb.AppendLine($"        /// </summary>");
+                sb.AppendLine($"        /// <param name=\"encoding\">The encoding to use when converting bytes to string.</param>");
+                sb.AppendLine($"        public static System.Threading.Tasks.Task<string> {asyncMethodName}AsString(System.Text.Encoding encoding)");
+                sb.AppendLine($"        {{");
+                sb.AppendLine($"            return Reader.ReadResourceAsStringAsync(Keys.{safeKey}, encoding);");
+                sb.AppendLine($"        }}");
+                sb.AppendLine();
+                
+                // Sync string method (UTF-8)
+                sb.AppendLine($"        /// <summary>");
+                sb.AppendLine($"        /// Reads the '{key}' resource as a string synchronously using UTF-8 encoding.");
+                sb.AppendLine($"        /// </summary>");
+                sb.AppendLine($"        public static string {methodName}AsString()");
+                sb.AppendLine($"        {{");
+                sb.AppendLine($"            return Reader.ReadResourceAsString(Keys.{safeKey});");
+                sb.AppendLine($"        }}");
+                sb.AppendLine();
+                
+                // Sync string method (with encoding)
+                sb.AppendLine($"        /// <summary>");
+                sb.AppendLine($"        /// Reads the '{key}' resource as a string synchronously using the specified encoding.");
+                sb.AppendLine($"        /// </summary>");
+                sb.AppendLine($"        /// <param name=\"encoding\">The encoding to use when converting bytes to string.</param>");
+                sb.AppendLine($"        public static string {methodName}AsString(System.Text.Encoding encoding)");
+                sb.AppendLine($"        {{");
+                sb.AppendLine($"            return Reader.ReadResourceAsString(Keys.{safeKey}, encoding);");
+                sb.AppendLine($"        }}");
+                sb.AppendLine();
+                
+                // GetStream method
+                sb.AppendLine($"        /// <summary>");
+                sb.AppendLine($"        /// Gets a read-only stream for the '{key}' resource.");
+                sb.AppendLine($"        /// </summary>");
+                sb.AppendLine($"        public static System.IO.Stream Get{Capitalize(safeKey)}Stream()");
+                sb.AppendLine($"        {{");
+                sb.AppendLine($"            return Reader.GetStream(Keys.{safeKey});");
                 sb.AppendLine($"        }}");
                 sb.AppendLine();
             }
