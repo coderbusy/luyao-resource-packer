@@ -3,6 +3,5 @@
   <PropertyGroup>
     <ResourcePackerEnabled Condition="'$(ResourcePackerEnabled)' == ''">true</ResourcePackerEnabled>
     <ResourcePackerPattern Condition="'$(ResourcePackerPattern)' == ''">*.res.*</ResourcePackerPattern>
-    <ResourcePackerOutputFileName Condition="'$(ResourcePackerOutputFileName)' == ''">$(AssemblyName).dat</ResourcePackerOutputFileName>
   </PropertyGroup>
 </Project>

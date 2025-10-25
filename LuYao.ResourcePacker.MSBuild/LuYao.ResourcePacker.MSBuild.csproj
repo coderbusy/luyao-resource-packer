@@ -13,8 +13,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LuYao.ResourcePacker\LuYao.ResourcePacker.csproj" />
+    <ProjectReference Include="..\LuYao.ResourcePacker\LuYao.ResourcePacker.csproj" PrivateAssets="all" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <Target Name="PackTaskDependencies" BeforeTargets="GenerateNuspec">
+    <ItemGroup>
+      <_PackageFiles Include="$(OutputPath)LuYao.ResourcePacker.dll">
+        <PackagePath>tasks/$(TargetFramework)</PackagePath>
+        <Visible>false</Visible>
+        <BuildAction>Content</BuildAction>
+      </_PackageFiles>
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <Content Include="build\*.props" PackagePath="build\" />
