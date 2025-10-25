@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
@@ -21,14 +22,22 @@ namespace LuYao.ResourcePacker.SourceGenerator
             // Get all additional files - MSBuild targets already filter by ResourcePackerPattern
             var resourceFiles = context.AdditionalTextsProvider.Collect();
 
-            // Combine with compilation
-            var compilationAndFiles = context.CompilationProvider.Combine(resourceFiles);
+            // Get analyzer config options
+            var analyzerConfigOptions = context.AnalyzerConfigOptionsProvider;
+
+            // Combine compilation, files, and config
+            var compilationAndFiles = context.CompilationProvider
+                .Combine(resourceFiles)
+                .Combine(analyzerConfigOptions);
 
             // Register source output
-            context.RegisterSourceOutput(compilationAndFiles, (spc, source) => Execute(spc, source.Left, source.Right));
+            context.RegisterSourceOutput(compilationAndFiles, (spc, source) => 
+                Execute(spc, source.Left.Left, source.Left.Right, source.Right));
         }
 
-        private static void Execute(SourceProductionContext context, Compilation compilation, System.Collections.Immutable.ImmutableArray<AdditionalText> resourceFiles)
+        private static void Execute(SourceProductionContext context, Compilation compilation, 
+            System.Collections.Immutable.ImmutableArray<AdditionalText> resourceFiles,
+            AnalyzerConfigOptionsProvider configOptions)
         {
             if (resourceFiles.Length == 0)
             {
@@ -37,10 +46,13 @@ namespace LuYao.ResourcePacker.SourceGenerator
 
             // Get assembly name
             var assemblyName = compilation.AssemblyName ?? "Assembly";
-            var className = $"{assemblyName}DataPackage";
+            var className = $"{assemblyName}ResourceAccess";
             
             // Get root namespace from compilation options or default to assembly name
             var rootNamespace = GetRootNamespace(compilation);
+            
+            // Get visibility from analyzer config (default to internal)
+            var visibility = GetVisibility(configOptions);
             
             // Extract resource keys
             var resourceKeys = resourceFiles
@@ -51,7 +63,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 .ToList();
 
             // Generate source code
-            var source = GenerateSourceCode(assemblyName, className, rootNamespace, resourceKeys);
+            var source = GenerateSourceCode(assemblyName, className, rootNamespace, visibility, resourceKeys);
 
             // Add source to compilation
             context.AddSource($"{className}.g.cs", SourceText.From(source, Encoding.UTF8));
@@ -78,7 +90,22 @@ namespace LuYao.ResourcePacker.SourceGenerator
             return compilation.AssemblyName ?? "Assembly";
         }
 
-        private static string GenerateSourceCode(string assemblyName, string className, string rootNamespace, List<string> resourceKeys)
+        private static string GetVisibility(AnalyzerConfigOptionsProvider configOptions)
+        {
+            // Try to get the visibility setting from global analyzer config
+            if (configOptions.GlobalOptions.TryGetValue("build_property.ResourcePackerAccessibility", out var visibility))
+            {
+                if (visibility.Equals("public", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "public";
+                }
+            }
+            
+            // Default to internal
+            return "internal";
+        }
+
+        private static string GenerateSourceCode(string assemblyName, string className, string rootNamespace, string visibility, List<string> resourceKeys)
         {
             var sb = new StringBuilder();
             
@@ -97,7 +124,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
             sb.AppendLine($"    /// <summary>");
             sb.AppendLine($"    /// Provides strongly-typed access to resources in {assemblyName}.");
             sb.AppendLine($"    /// </summary>");
-            sb.AppendLine($"    public static class {className}");
+            sb.AppendLine($"    {visibility} static class {className}");
             sb.AppendLine("    {");
             
             // Add resource key constants
@@ -135,19 +162,17 @@ namespace LuYao.ResourcePacker.SourceGenerator
             sb.AppendLine("        public static ResourcePackageReader Reader => _reader.Value;");
             sb.AppendLine();
             
-            // Add ContainsKey helper methods for each resource
-            foreach (var key in resourceKeys)
-            {
-                var safeKey = MakeSafeIdentifier(key);
-                sb.AppendLine($"        /// <summary>");
-                sb.AppendLine($"        /// Determines whether the '{key}' resource exists in the package.");
-                sb.AppendLine($"        /// </summary>");
-                sb.AppendLine($"        public static bool Contains{Capitalize(safeKey)}()");
-                sb.AppendLine($"        {{");
-                sb.AppendLine($"            return Reader.ContainsKey(Keys.{safeKey});");
-                sb.AppendLine($"        }}");
-                sb.AppendLine();
-            }
+            // Add ContainsKey wrapper method
+            sb.AppendLine("        /// <summary>");
+            sb.AppendLine("        /// Determines whether the package contains a resource with the specified key.");
+            sb.AppendLine("        /// </summary>");
+            sb.AppendLine("        /// <param name=\"resourceKey\">The key to check for.</param>");
+            sb.AppendLine("        /// <returns>true if the package contains a resource with the specified key; otherwise, false.</returns>");
+            sb.AppendLine("        public static bool ContainsKey(string resourceKey)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            return Reader.ContainsKey(resourceKey);");
+            sb.AppendLine("        }");
+            sb.AppendLine();
             
             // Add helper methods for each resource
             foreach (var key in resourceKeys)

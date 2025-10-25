@@ -3,5 +3,10 @@
   <PropertyGroup>
     <ResourcePackerEnabled Condition="'$(ResourcePackerEnabled)' == ''">true</ResourcePackerEnabled>
     <ResourcePackerPattern Condition="'$(ResourcePackerPattern)' == ''">*.res.*</ResourcePackerPattern>
+    <ResourcePackerAccessibility Condition="'$(ResourcePackerAccessibility)' == ''">internal</ResourcePackerAccessibility>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <CompilerVisibleProperty Include="ResourcePackerAccessibility" />
+  </ItemGroup>
 </Project>

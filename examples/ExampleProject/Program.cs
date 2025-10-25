@@ -42,30 +42,30 @@ class Program
         Console.WriteLine();
 
         // ===== New Strongly-Typed API (Generated) =====
-        Console.WriteLine("--- New Strongly-Typed API (using ExampleProjectDataPackage) ---");
+        Console.WriteLine("--- New Strongly-Typed API (using ExampleProjectResourceAccess) ---");
         Console.WriteLine();
         
         // Access resource keys as constants
         Console.WriteLine("Resource keys from generated class:");
-        Console.WriteLine($"  - {ExampleProjectDataPackage.Keys.config}");
-        Console.WriteLine($"  - {ExampleProjectDataPackage.Keys.message}");
-        Console.WriteLine($"  - {ExampleProjectDataPackage.Keys.template}");
+        Console.WriteLine($"  - {ExampleProjectResourceAccess.Keys.config}");
+        Console.WriteLine($"  - {ExampleProjectResourceAccess.Keys.message}");
+        Console.WriteLine($"  - {ExampleProjectResourceAccess.Keys.template}");
         Console.WriteLine();
         
         // Read resources using generated methods
         Console.WriteLine("--- Reading 'config' using generated method ---");
-        string config = await ExampleProjectDataPackage.ReadConfigAsyncAsString();
+        string config = await ExampleProjectResourceAccess.ReadConfigAsyncAsString();
         Console.WriteLine(config);
         Console.WriteLine();
         
         Console.WriteLine("--- Reading 'message' using generated method ---");
-        string messageGenerated = await ExampleProjectDataPackage.ReadMessageAsyncAsString();
+        string messageGenerated = await ExampleProjectResourceAccess.ReadMessageAsyncAsString();
         Console.WriteLine(messageGenerated);
         Console.WriteLine();
         
         // Read template resource as bytes using generated method
         Console.WriteLine("--- Reading 'template' using generated method ---");
-        byte[] templateBytes = await ExampleProjectDataPackage.ReadTemplateAsync();
+        byte[] templateBytes = await ExampleProjectResourceAccess.ReadTemplateAsync();
         Console.WriteLine($"Template size: {templateBytes.Length} bytes");
         string templateContent = Encoding.UTF8.GetString(templateBytes);
         Console.WriteLine("Template content (first 200 characters):");

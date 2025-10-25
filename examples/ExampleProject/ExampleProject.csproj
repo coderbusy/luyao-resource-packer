@@ -8,6 +8,7 @@
     <ResourcePackerEnabled>true</ResourcePackerEnabled>
     <ResourcePackerPattern>*.res.*</ResourcePackerPattern>
     <ResourcePackerOutputFileName>$(AssemblyName).dat</ResourcePackerOutputFileName>
+    <ResourcePackerAccessibility>public</ResourcePackerAccessibility>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
