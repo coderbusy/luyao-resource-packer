@@ -18,22 +18,14 @@ namespace LuYao.ResourcePacker.SourceGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            // Get all additional files matching the resource pattern
-            var resourceFiles = context.AdditionalTextsProvider
-                .Where(file => IsResourceFile(file.Path))
-                .Collect();
+            // Get all additional files - MSBuild targets already filter by ResourcePackerPattern
+            var resourceFiles = context.AdditionalTextsProvider.Collect();
 
             // Combine with compilation
             var compilationAndFiles = context.CompilationProvider.Combine(resourceFiles);
 
             // Register source output
             context.RegisterSourceOutput(compilationAndFiles, (spc, source) => Execute(spc, source.Left, source.Right));
-        }
-
-        private static bool IsResourceFile(string filePath)
-        {
-            var fileName = Path.GetFileName(filePath);
-            return fileName.Contains(".res.");
         }
 
         private static void Execute(SourceProductionContext context, Compilation compilation, System.Collections.Immutable.ImmutableArray<AdditionalText> resourceFiles)
