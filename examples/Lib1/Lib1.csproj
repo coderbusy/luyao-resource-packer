@@ -18,24 +18,11 @@
     <None Include="Resources\**\*.res.*" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
-  <!-- 
-    NOTE: This example uses project references to demonstrate the library from source.
-    For external projects consuming the NuGet package, the MSBuild targets are automatically
-    imported and you don't need the UsingTask and Target declarations below.
-  -->
+  <!-- For development with project references, manually import and override assembly path -->
   <UsingTask TaskName="LuYao.ResourcePacker.MSBuild.ResourcePackerTask" 
-             AssemblyFile="$(MSBuildThisFileDirectory)..\..\LuYao.ResourcePacker.MSBuild\bin\$(Configuration)\netstandard2.0\LuYao.ResourcePacker.MSBuild.dll" />
-
-  <Target Name="PackResources" BeforeTargets="CopyFilesToOutputDirectory" Condition="'$(ResourcePackerEnabled)' == 'true'">
-    <PropertyGroup>
-      <ResourcePackerOutputFileName Condition="'$(ResourcePackerOutputFileName)' == ''">$(AssemblyName).dat</ResourcePackerOutputFileName>
-    </PropertyGroup>
-    <ResourcePackerTask
-      ProjectDir="$(ProjectDir)"
-      OutputPath="$(OutputPath)"
-      AssemblyName="$(AssemblyName)"
-      ResourcePattern="$(ResourcePackerPattern)"
-      OutputFileName="$(ResourcePackerOutputFileName)" />
-  </Target>
+             AssemblyFile="..\..\LuYao.ResourcePacker.MSBuild\bin\$(Configuration)\netstandard2.0\LuYao.ResourcePacker.MSBuild.dll" />
+  
+  <Import Project="..\..\LuYao.ResourcePacker.MSBuild\build\LuYao.ResourcePacker.MSBuild.props" />
+  <Import Project="..\..\LuYao.ResourcePacker.MSBuild\build\LuYao.ResourcePacker.MSBuild.targets" />
 
 </Project>
