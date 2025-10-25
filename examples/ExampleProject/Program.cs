@@ -1,5 +1,6 @@
 using LuYao.ResourcePacker;
 using System.Text;
+using ExampleProject; // Import the namespace where the generated class resides
 
 class Program
 {

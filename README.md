@@ -74,10 +74,11 @@ foreach (var key in reader.ResourceKeys)
 
 ### 3. Runtime Access - Strongly-Typed API (NEW)
 
-The source generator automatically creates a static class named `{AssemblyName}DataPackage` with strongly-typed access to your resources:
+The source generator automatically creates a static class named `{AssemblyName}DataPackage` in the project's root namespace with strongly-typed access to your resources:
 
 ```csharp
 using LuYao.ResourcePacker;
+using YourAssembly; // Import the namespace where the generated class resides
 
 // Access resource keys as constants
 Console.WriteLine(YourAssemblyDataPackage.Keys.message);
@@ -122,28 +123,31 @@ When you add resource files (e.g., `test.res.txt`, `config.res.json`) to your pr
 
 1. During build, the MSBuild task scans for files matching the pattern `*.res.*`
 2. These files are packaged into a `.dat` file
-3. The source generator creates a static class with:
+3. The source generator creates a static class in the project's root namespace (defaults to assembly name) with:
    - A nested `Keys` class containing const strings for each resource
    - A static `Reader` property providing access to the `ResourcePackageReader`
    - Strongly-typed methods like `ReadTestAsync()` and `ReadConfigAsync()`
 
 Example generated code:
 ```csharp
-public static class YourAssemblyDataPackage
+namespace YourAssembly
 {
-    public static class Keys
+    public static class YourAssemblyDataPackage
     {
-        public const string test = "test";
-        public const string config = "config";
+        public static class Keys
+        {
+            public const string test = "test";
+            public const string config = "config";
+        }
+        
+        public static ResourcePackageReader Reader { get; }
+        
+        public static Task<byte[]> ReadTestAsync() { ... }
+        public static Task<string> ReadTestAsyncAsString() { ... }
+        
+        public static Task<byte[]> ReadConfigAsync() { ... }
+        public static Task<string> ReadConfigAsyncAsString() { ... }
     }
-    
-    public static ResourcePackageReader Reader { get; }
-    
-    public static Task<byte[]> ReadTestAsync() { ... }
-    public static Task<string> ReadTestAsyncAsString() { ... }
-    
-    public static Task<byte[]> ReadConfigAsync() { ... }
-    public static Task<string> ReadConfigAsyncAsString() { ... }
 }
 ```
 

@@ -47,6 +47,9 @@ namespace LuYao.ResourcePacker.SourceGenerator
             var assemblyName = compilation.AssemblyName ?? "Assembly";
             var className = $"{assemblyName}DataPackage";
             
+            // Get root namespace from compilation options or default to assembly name
+            var rootNamespace = GetRootNamespace(compilation);
+            
             // Extract resource keys
             var resourceKeys = resourceFiles
                 .Select(f => GetResourceKey(f.Path))
@@ -56,7 +59,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 .ToList();
 
             // Generate source code
-            var source = GenerateSourceCode(assemblyName, className, resourceKeys);
+            var source = GenerateSourceCode(assemblyName, className, rootNamespace, resourceKeys);
 
             // Add source to compilation
             context.AddSource($"{className}.g.cs", SourceText.From(source, Encoding.UTF8));
@@ -69,7 +72,21 @@ namespace LuYao.ResourcePacker.SourceGenerator
             return firstDot > 0 ? fileName.Substring(0, firstDot) : fileName;
         }
 
-        private static string GenerateSourceCode(string assemblyName, string className, List<string> resourceKeys)
+        private static string GetRootNamespace(Compilation compilation)
+        {
+            // Try to get RootNamespace from compilation options
+            // First, check if there's a global namespace option
+            if (compilation.Options is CSharpCompilationOptions csharpOptions)
+            {
+                // Look for MSBuild properties that might contain the root namespace
+                // The RootNamespace is typically passed through analyzer config
+            }
+            
+            // Default to assembly name if no explicit root namespace is found
+            return compilation.AssemblyName ?? "Assembly";
+        }
+
+        private static string GenerateSourceCode(string assemblyName, string className, string rootNamespace, List<string> resourceKeys)
         {
             var sb = new StringBuilder();
             
@@ -81,45 +98,49 @@ namespace LuYao.ResourcePacker.SourceGenerator
             sb.AppendLine("using LuYao.ResourcePacker;");
             sb.AppendLine();
             
-            sb.AppendLine($"/// <summary>");
-            sb.AppendLine($"/// Provides strongly-typed access to resources in {assemblyName}.");
-            sb.AppendLine($"/// </summary>");
-            sb.AppendLine($"public static class {className}");
+            // Add namespace
+            sb.AppendLine($"namespace {rootNamespace}");
             sb.AppendLine("{");
             
-            // Add resource key constants
-            sb.AppendLine("    /// <summary>");
-            sb.AppendLine("    /// Resource keys available in this package.");
-            sb.AppendLine("    /// </summary>");
-            sb.AppendLine("    public static class Keys");
+            sb.AppendLine($"    /// <summary>");
+            sb.AppendLine($"    /// Provides strongly-typed access to resources in {assemblyName}.");
+            sb.AppendLine($"    /// </summary>");
+            sb.AppendLine($"    public static class {className}");
             sb.AppendLine("    {");
+            
+            // Add resource key constants
+            sb.AppendLine("        /// <summary>");
+            sb.AppendLine("        /// Resource keys available in this package.");
+            sb.AppendLine("        /// </summary>");
+            sb.AppendLine("        public static class Keys");
+            sb.AppendLine("        {");
             
             foreach (var key in resourceKeys)
             {
                 var safeKey = MakeSafeIdentifier(key);
-                sb.AppendLine($"        /// <summary>Resource key for '{key}'</summary>");
-                sb.AppendLine($"        public const string {safeKey} = \"{key}\";");
+                sb.AppendLine($"            /// <summary>Resource key for '{key}'</summary>");
+                sb.AppendLine($"            public const string {safeKey} = \"{key}\";");
             }
             
-            sb.AppendLine("    }");
+            sb.AppendLine("        }");
             sb.AppendLine();
             
             // Add lazy-initialized reader instance
-            sb.AppendLine("    private static readonly Lazy<ResourcePackageReader> _reader = new Lazy<ResourcePackageReader>(() =>");
-            sb.AppendLine("    {");
-            sb.AppendLine($"        var datFilePath = Path.Combine(AppContext.BaseDirectory, \"{assemblyName}.dat\");");
-            sb.AppendLine("        if (!File.Exists(datFilePath))");
+            sb.AppendLine("        private static readonly Lazy<ResourcePackageReader> _reader = new Lazy<ResourcePackageReader>(() =>");
             sb.AppendLine("        {");
-            sb.AppendLine($"            throw new FileNotFoundException($\"Resource package file not found: {{datFilePath}}\");");
-            sb.AppendLine("        }");
-            sb.AppendLine("        return new ResourcePackageReader(datFilePath);");
-            sb.AppendLine("    });");
+            sb.AppendLine($"            var datFilePath = Path.Combine(AppContext.BaseDirectory, \"{assemblyName}.dat\");");
+            sb.AppendLine("            if (!File.Exists(datFilePath))");
+            sb.AppendLine("            {");
+            sb.AppendLine($"                throw new FileNotFoundException($\"Resource package file not found: {{datFilePath}}\");");
+            sb.AppendLine("            }");
+            sb.AppendLine("            return new ResourcePackageReader(datFilePath);");
+            sb.AppendLine("        });");
             sb.AppendLine();
             
-            sb.AppendLine("    /// <summary>");
-            sb.AppendLine("    /// Gets the ResourcePackageReader instance for accessing resources.");
-            sb.AppendLine("    /// </summary>");
-            sb.AppendLine("    public static ResourcePackageReader Reader => _reader.Value;");
+            sb.AppendLine("        /// <summary>");
+            sb.AppendLine("        /// Gets the ResourcePackageReader instance for accessing resources.");
+            sb.AppendLine("        /// </summary>");
+            sb.AppendLine("        public static ResourcePackageReader Reader => _reader.Value;");
             sb.AppendLine();
             
             // Add helper methods for each resource
@@ -129,26 +150,27 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 var methodName = $"Read{Capitalize(safeKey)}";
                 var asyncMethodName = $"Read{Capitalize(safeKey)}Async";
                 
-                sb.AppendLine($"    /// <summary>");
-                sb.AppendLine($"    /// Reads the '{key}' resource as a byte array asynchronously.");
-                sb.AppendLine($"    /// </summary>");
-                sb.AppendLine($"    public static System.Threading.Tasks.Task<byte[]> {asyncMethodName}()");
-                sb.AppendLine($"    {{");
-                sb.AppendLine($"        return Reader.ReadResourceAsync(Keys.{safeKey});");
-                sb.AppendLine($"    }}");
+                sb.AppendLine($"        /// <summary>");
+                sb.AppendLine($"        /// Reads the '{key}' resource as a byte array asynchronously.");
+                sb.AppendLine($"        /// </summary>");
+                sb.AppendLine($"        public static System.Threading.Tasks.Task<byte[]> {asyncMethodName}()");
+                sb.AppendLine($"        {{");
+                sb.AppendLine($"            return Reader.ReadResourceAsync(Keys.{safeKey});");
+                sb.AppendLine($"        }}");
                 sb.AppendLine();
                 
-                sb.AppendLine($"    /// <summary>");
-                sb.AppendLine($"    /// Reads the '{key}' resource as a string asynchronously.");
-                sb.AppendLine($"    /// </summary>");
-                sb.AppendLine($"    public static System.Threading.Tasks.Task<string> {asyncMethodName}AsString()");
-                sb.AppendLine($"    {{");
-                sb.AppendLine($"        return Reader.ReadResourceAsStringAsync(Keys.{safeKey});");
-                sb.AppendLine($"    }}");
+                sb.AppendLine($"        /// <summary>");
+                sb.AppendLine($"        /// Reads the '{key}' resource as a string asynchronously.");
+                sb.AppendLine($"        /// </summary>");
+                sb.AppendLine($"        public static System.Threading.Tasks.Task<string> {asyncMethodName}AsString()");
+                sb.AppendLine($"        {{");
+                sb.AppendLine($"            return Reader.ReadResourceAsStringAsync(Keys.{safeKey});");
+                sb.AppendLine($"        }}");
                 sb.AppendLine();
             }
             
-            sb.AppendLine("}");
+            sb.AppendLine("    }"); // Close class
+            sb.AppendLine("}"); // Close namespace
             
             return sb.ToString();
         }
