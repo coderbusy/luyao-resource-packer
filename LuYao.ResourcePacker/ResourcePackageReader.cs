@@ -68,6 +68,16 @@ namespace LuYao.ResourcePacker
         public IEnumerable<string> ResourceKeys => _resourceIndex.Keys;
 
         /// <summary>
+        /// Determines whether the package contains a resource with the specified key.
+        /// </summary>
+        /// <param name="resourceKey">The key to check for.</param>
+        /// <returns>true if the package contains a resource with the specified key; otherwise, false.</returns>
+        public bool ContainsKey(string resourceKey)
+        {
+            return _resourceIndex.ContainsKey(resourceKey);
+        }
+
+        /// <summary>
         /// Reads a resource as a byte array asynchronously.
         /// </summary>
         /// <param name="resourceKey">The key of the resource to read.</param>

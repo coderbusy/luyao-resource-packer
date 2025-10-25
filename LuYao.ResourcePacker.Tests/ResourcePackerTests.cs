@@ -352,6 +352,38 @@ namespace LuYao.ResourcePacker.Tests
                 reader.GetStream("test"));
         }
 
+        [Fact]
+        public void ContainsKey_WithExistingKey_ShouldReturnTrue()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            packer.PackResources(_outputPath);
+
+            // Act
+            using var reader = new ResourcePackageReader(_outputPath);
+            var exists = reader.ContainsKey("test");
+
+            // Assert
+            Assert.True(exists);
+        }
+
+        [Fact]
+        public void ContainsKey_WithNonExistentKey_ShouldReturnFalse()
+        {
+            // Arrange
+            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
+            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            packer.PackResources(_outputPath);
+
+            // Act
+            using var reader = new ResourcePackageReader(_outputPath);
+            var exists = reader.ContainsKey("non_existent_key");
+
+            // Assert
+            Assert.False(exists);
+        }
+
         public void Dispose()
         {
             // 清理临时目录
