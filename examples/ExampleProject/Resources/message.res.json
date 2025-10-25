@@ -1,0 +1,10 @@
+{
+  "greeting": "Hello from LuYao.ResourcePacker!",
+  "description": "This is a sample resource file demonstrating the resource packer library.",
+  "features": [
+    "Pack multiple resource files into a single .dat file",
+    "Automatic MSBuild integration",
+    "Simple runtime API",
+    "Async support"
+  ]
+}

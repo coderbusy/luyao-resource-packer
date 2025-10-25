@@ -1,0 +1,10 @@
+{
+  "appName": "Example Project",
+  "version": "1.0.0",
+  "author": "Soar360",
+  "settings": {
+    "enableLogging": true,
+    "maxRetries": 3,
+    "timeout": 30
+  }
+}
