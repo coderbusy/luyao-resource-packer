@@ -31,9 +31,9 @@ namespace LuYao.ResourcePacker
             
             // Read version number
             var version = reader.ReadByte();
-            if (version != 1)
+            if (version != ResourcePacker.FormatVersion)
             {
-                throw new InvalidDataException($"Unsupported file version: {version}. Expected version 1.");
+                throw new InvalidDataException($"Unsupported file version: {version}. Expected version {ResourcePacker.FormatVersion}.");
             }
 
             // Read resource count

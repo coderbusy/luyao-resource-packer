@@ -8,13 +8,23 @@ namespace LuYao.ResourcePacker
 {
     public class ResourcePacker
     {
+        /// <summary>
+        /// The current version of the resource package format.
+        /// </summary>
+        public const byte FormatVersion = 1;
+
         private readonly string _sourceDirectory;
         private readonly string _pattern;
 
         public ResourcePacker(string sourceDirectory, string pattern)
         {
-            _sourceDirectory = sourceDirectory ?? throw new ArgumentNullException(nameof(sourceDirectory));
-            _pattern = pattern ?? throw new ArgumentNullException(nameof(pattern));
+            if (string.IsNullOrEmpty(sourceDirectory))
+                throw new ArgumentNullException(nameof(sourceDirectory));
+            if (string.IsNullOrEmpty(pattern))
+                throw new ArgumentNullException(nameof(pattern));
+
+            _sourceDirectory = sourceDirectory;
+            _pattern = pattern;
         }
 
         public void PackResources(string outputFilePath)
@@ -49,7 +59,7 @@ namespace LuYao.ResourcePacker
             using var writer = new BinaryWriter(fs);
 
             // Write version number (requirement 1)
-            writer.Write((byte)1);
+            writer.Write(FormatVersion);
 
             // Write resource count
             writer.Write(resourceList.Count);
