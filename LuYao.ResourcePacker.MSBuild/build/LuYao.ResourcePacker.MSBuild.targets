@@ -4,6 +4,9 @@
              AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\LuYao.ResourcePacker.MSBuild.dll" />
 
   <Target Name="PackResources" BeforeTargets="CopyFilesToOutputDirectory" Condition="'$(ResourcePackerEnabled)' == 'true'">
+    <PropertyGroup>
+      <ResourcePackerOutputFileName Condition="'$(ResourcePackerOutputFileName)' == ''">$(AssemblyName).dat</ResourcePackerOutputFileName>
+    </PropertyGroup>
     <ResourcePackerTask
       ProjectDir="$(ProjectDir)"
       OutputPath="$(OutputPath)"
