@@ -43,24 +43,22 @@ namespace LuYao.ResourcePacker
 
         private void WriteResourcePackage(string outputFilePath, IEnumerable<ResourceFile> resources)
         {
-            var resourceList = resources.ToList();
+            var resourceList = resources.OrderBy(r => r.Key).ToList();
             
             using var fs = new FileStream(outputFilePath, FileMode.Create);
             using var writer = new BinaryWriter(fs);
 
-            // Write header
+            // Write version number (requirement 1)
+            writer.Write((byte)1);
+
+            // Write resource count
             writer.Write(resourceList.Count);
 
-            // Calculate offsets
-            var currentOffset = CalculateHeaderSize(resourceList);
-
-            // Write index
+            // Write index (requirement 3: only key and length)
             foreach (var resource in resourceList)
             {
                 writer.Write(resource.Key);
-                writer.Write(currentOffset);
                 writer.Write(resource.Content.Length);
-                currentOffset += resource.Content.Length;
             }
 
             // Write content
@@ -70,16 +68,7 @@ namespace LuYao.ResourcePacker
             }
         }
 
-        private int CalculateHeaderSize(List<ResourceFile> resources)
-        {
-            // Format: Count (int) + foreach resource (string length + string + long offset + int length)
-            int size = sizeof(int);
-            foreach (var resource in resources)
-            {
-                size += sizeof(int) + Encoding.UTF8.GetByteCount(resource.Key) + sizeof(long) + sizeof(int);
-            }
-            return size;
-        }
+
 
         private class ResourceFile
         {
