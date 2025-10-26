@@ -7,6 +7,7 @@
   <Folder Name="/examples/">
     <Project Path="examples/App1/App1.csproj" />
     <Project Path="examples/ExampleProject/ExampleProject.csproj" />
+    <Project Path="examples/Lib1.Ns2.Ns3/Lib1.Ns2.Ns3.csproj" />
     <Project Path="examples/Lib1/Lib1.csproj" />
     <Project Path="examples/Lib2/Lib2.csproj" />
     <Project Path="examples/Lib3/Lib3.csproj" />
