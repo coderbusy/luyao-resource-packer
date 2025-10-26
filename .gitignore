@@ -60,3 +60,5 @@ artifacts/
 *.tmp
 *.temp
 *.log
+# Source generator output (for EmitCompilerGeneratedFiles)
+**/generated/

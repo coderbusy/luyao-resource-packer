@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LuYao.ResourcePacker\LuYao.ResourcePacker.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\LuYao.ResourcePacker.SourceGenerator\LuYao.ResourcePacker.SourceGenerator.csproj" PrivateAssets="all" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -24,6 +25,11 @@
     <ItemGroup>
       <_PackageFiles Include="$(OutputPath)LuYao.ResourcePacker.dll">
         <PackagePath>tasks/$(TargetFramework)</PackagePath>
+        <Visible>false</Visible>
+        <BuildAction>Content</BuildAction>
+      </_PackageFiles>
+      <_PackageFiles Include="$(OutputPath)LuYao.ResourcePacker.SourceGenerator.dll">
+        <PackagePath>analyzers/dotnet/cs</PackagePath>
         <Visible>false</Visible>
         <BuildAction>Content</BuildAction>
       </_PackageFiles>

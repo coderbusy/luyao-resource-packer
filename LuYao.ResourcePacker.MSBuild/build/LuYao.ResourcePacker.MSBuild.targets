@@ -22,4 +22,14 @@
       </None>
     </ItemGroup>
   </Target>
+
+  <!-- Add resource files as AdditionalFiles for source generator -->
+  <ItemGroup>
+    <AdditionalFiles Include="**\$(ResourcePackerPattern)" Visible="false" />
+  </ItemGroup>
+
+  <!-- Reference the source generator -->
+  <ItemGroup>
+    <Analyzer Include="$(MSBuildThisFileDirectory)..\analyzers\dotnet\cs\LuYao.ResourcePacker.SourceGenerator.dll" />
+  </ItemGroup>
 </Project>
