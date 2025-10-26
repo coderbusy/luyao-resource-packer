@@ -24,8 +24,10 @@
   </Target>
 
   <!-- Add resource files as AdditionalFiles for source generator -->
+  <!-- Only include files from the current project directory to avoid including
+       additional files from other source generators or referenced projects -->
   <ItemGroup>
-    <AdditionalFiles Include="**\$(ResourcePackerPattern)" Visible="false" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\**\$(ResourcePackerPattern)" Visible="false" />
   </ItemGroup>
 
   <!-- Reference the source generator -->
