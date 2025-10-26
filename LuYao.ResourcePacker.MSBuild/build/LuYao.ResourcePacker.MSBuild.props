@@ -2,13 +2,11 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ResourcePackerEnabled Condition="'$(ResourcePackerEnabled)' == ''">true</ResourcePackerEnabled>
-    <ResourcePackerPattern Condition="'$(ResourcePackerPattern)' == ''">*.res.*</ResourcePackerPattern>
-    <ResourcePackerAccessibility Condition="'$(ResourcePackerAccessibility)' == ''">internal</ResourcePackerAccessibility>
+    <ResourcePackerDirectory Condition="'$(ResourcePackerDirectory)' == ''">Resources</ResourcePackerDirectory>
   </PropertyGroup>
   
   <ItemGroup>
-    <CompilerVisibleProperty Include="ResourcePackerAccessibility" />
     <CompilerVisibleProperty Include="ResourcePackerOutputFileName" />
-    <CompilerVisibleProperty Include="ResourcePackerPattern" />
+    <CompilerVisibleProperty Include="ResourcePackerDirectory" />
   </ItemGroup>
 </Project>

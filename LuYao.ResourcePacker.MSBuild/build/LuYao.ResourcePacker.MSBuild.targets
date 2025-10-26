@@ -13,7 +13,7 @@
       ProjectDir="$(ProjectDir)"
       OutputPath="$(OutputPath)"
       AssemblyName="$(_AssemblyNameForPacker)"
-      ResourcePattern="$(ResourcePackerPattern)"
+      ResourceDirectory="$(ResourcePackerDirectory)"
       OutputFileName="$(ResourcePackerOutputFileName)" />
       
     <!-- Add .dat file to None so it gets copied to referencing projects -->
@@ -27,7 +27,7 @@
 
   <!-- Add resource files as AdditionalFiles for source generator -->
   <ItemGroup>
-    <AdditionalFiles Include="**\$(ResourcePackerPattern)" Visible="false" />
+    <AdditionalFiles Include="$(ResourcePackerDirectory)\**\*" Visible="false" />
   </ItemGroup>
 
   <!-- Reference the source generator -->

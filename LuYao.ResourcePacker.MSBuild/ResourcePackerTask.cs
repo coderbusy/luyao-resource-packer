@@ -16,7 +16,7 @@ namespace LuYao.ResourcePacker.MSBuild
         [Required]
         public string AssemblyName { get; set; }
 
-        public string ResourcePattern { get; set; } = "*.res.*";
+        public string ResourceDirectory { get; set; } = "Resources";
 
         public string OutputFileName { get; set; }
 
@@ -30,8 +30,11 @@ namespace LuYao.ResourcePacker.MSBuild
 
                 var outputFilePath = Path.Combine(OutputPath, outputFileName);
 
+                // Construct the full path to the resources directory
+                var resourcesPath = Path.Combine(ProjectDir, ResourceDirectory);
+
                 // Create resource packer
-                var packer = new global::LuYao.ResourcePacker.ResourcePacker(ProjectDir, ResourcePattern);
+                var packer = new global::LuYao.ResourcePacker.ResourcePacker(resourcesPath);
 
                 // Pack resources
                 packer.PackResources(outputFilePath);
