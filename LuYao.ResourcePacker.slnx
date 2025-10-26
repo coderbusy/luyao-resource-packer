@@ -12,6 +12,9 @@
     <Project Path="examples/Lib2/Lib2.csproj" />
     <Project Path="examples/Lib3/Lib3.csproj" />
   </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/RootNamespaceTest/RootNamespaceTest.csproj" />
+  </Folder>
   <Project Path="LuYao.ResourcePacker.MSBuild/LuYao.ResourcePacker.MSBuild.csproj" />
   <Project Path="LuYao.ResourcePacker.SourceGenerator/LuYao.ResourcePacker.SourceGenerator.csproj" />
   <Project Path="LuYao.ResourcePacker.Tests/LuYao.ResourcePacker.Tests.csproj" />

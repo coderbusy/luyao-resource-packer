@@ -8,5 +8,6 @@
   <ItemGroup>
     <CompilerVisibleProperty Include="ResourcePackerOutputFileName" />
     <CompilerVisibleProperty Include="ResourcePackerDirectory" />
+    <CompilerVisibleProperty Include="RootNamespace" />
   </ItemGroup>
 </Project>
