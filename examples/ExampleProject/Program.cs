@@ -22,7 +22,7 @@ class Program
             return;
         }
 
-        using var reader = new ResourcePackageReader(datFilePath);
+        var reader = new ResourcePackageReader(datFilePath);
         
         Console.WriteLine($"Resource package loaded: {datFilePath}");
         Console.WriteLine();

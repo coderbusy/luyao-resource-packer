@@ -30,7 +30,7 @@ namespace LuYao.ResourcePacker.Tests
         public async Task ConcurrentReadResourceAsync_ShouldNotCorruptData()
         {
             // Arrange
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             const int threadCount = 10;
             const int iterationsPerThread = 50;
 
@@ -55,7 +55,7 @@ namespace LuYao.ResourcePacker.Tests
         public void ConcurrentReadResource_ShouldNotCorruptData()
         {
             // Arrange
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             const int threadCount = 10;
             const int iterationsPerThread = 50;
 
@@ -80,7 +80,7 @@ namespace LuYao.ResourcePacker.Tests
         public void ConcurrentReadResourceBytes_ShouldReturnCorrectData()
         {
             // Arrange
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             const int threadCount = 10;
             const int iterationsPerThread = 50;
 
@@ -108,7 +108,7 @@ namespace LuYao.ResourcePacker.Tests
         public void ConcurrentGetStream_ShouldNotCorruptData()
         {
             // Arrange
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             const int threadCount = 10;
             const int iterationsPerThread = 20;
 
@@ -139,7 +139,7 @@ namespace LuYao.ResourcePacker.Tests
         public void MixedConcurrentOperations_ShouldNotCorruptData()
         {
             // Arrange
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             const int threadCount = 15;
             const int iterationsPerThread = 30;
 
@@ -178,7 +178,7 @@ namespace LuYao.ResourcePacker.Tests
         public async Task ConcurrentReadWithDifferentEncodings_ShouldNotCorruptData()
         {
             // Arrange
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             const int threadCount = 8;
             const int iterationsPerThread = 40;
 
@@ -202,7 +202,7 @@ namespace LuYao.ResourcePacker.Tests
         public void ConcurrentStreamReads_ShouldNotCorruptData()
         {
             // Arrange
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             const int threadCount = 10;
 
             // Act - Multiple threads reading from streams simultaneously

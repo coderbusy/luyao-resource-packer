@@ -10,11 +10,10 @@ namespace LuYao.ResourcePacker
     /// Provides functionality to read resources from a packaged resource file.
     /// This class is thread-safe for concurrent read operations by creating independent FileStream instances per operation.
     /// </summary>
-    public class ResourcePackageReader : IDisposable
+    public class ResourcePackageReader
     {
         private readonly string _filePath;
         private readonly Dictionary<string, ResourceEntry> _resourceIndex;
-        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourcePackageReader"/> class.
@@ -86,9 +85,6 @@ namespace LuYao.ResourcePacker
         /// <returns>A task that represents the asynchronous read operation.</returns>
         public Task<byte[]> ReadResourceAsync(string resourceKey)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ResourcePackageReader));
-
             if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
@@ -142,9 +138,6 @@ namespace LuYao.ResourcePacker
         /// <returns>The resource data as a byte array.</returns>
         public byte[] ReadResource(string resourceKey)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ResourcePackageReader));
-
             if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
@@ -193,28 +186,17 @@ namespace LuYao.ResourcePacker
 
         /// <summary>
         /// Gets a read-only stream for the specified resource.
+        /// This allows streaming large resources without loading all data into memory.
         /// </summary>
         /// <param name="resourceKey">The key of the resource to read.</param>
         /// <returns>A read-only stream containing the resource data.</returns>
         public Stream GetStream(string resourceKey)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ResourcePackageReader));
-
             if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
-            // Read the resource data into memory and return a MemoryStream
-            var buffer = ReadResource(resourceKey);
-            return new MemoryStream(buffer, writable: false);
-        }
-
-        /// <summary>
-        /// Releases the resources used by the <see cref="ResourcePackageReader"/>.
-        /// </summary>
-        public void Dispose()
-        {
-            _disposed = true;
+            // Create a SubStream for streaming access without loading entire resource into memory
+            return new ResourceSubStream(_filePath, entry.Offset, entry.Length);
         }
     }
 
@@ -222,5 +204,130 @@ namespace LuYao.ResourcePacker
     {
         public long Offset { get; set; }
         public int Length { get; set; }
+    }
+
+    /// <summary>
+    /// A read-only stream that provides access to a portion of a resource package file.
+    /// This allows streaming large resources without loading all data into memory.
+    /// Each instance creates its own FileStream for thread-safe operation.
+    /// </summary>
+    internal class ResourceSubStream : Stream
+    {
+        private readonly string _filePath;
+        private readonly long _resourceOffset;
+        private readonly long _resourceLength;
+        private long _position;
+        private FileStream? _fileStream;
+        private bool _disposed;
+
+        public ResourceSubStream(string filePath, long offset, long length)
+        {
+            _filePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+            _resourceOffset = offset;
+            _resourceLength = length;
+            _position = 0;
+        }
+
+        private FileStream EnsureFileStream()
+        {
+            if (_fileStream == null)
+            {
+                _fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            }
+            return _fileStream;
+        }
+
+        public override bool CanRead => !_disposed;
+        public override bool CanSeek => !_disposed;
+        public override bool CanWrite => false;
+        public override long Length => _resourceLength;
+
+        public override long Position
+        {
+            get => _position;
+            set
+            {
+                if (_disposed)
+                    throw new ObjectDisposedException(nameof(ResourceSubStream));
+                if (value < 0 || value > _resourceLength)
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                _position = value;
+            }
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(ResourceSubStream));
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
+            if (offset < 0)
+                throw new ArgumentOutOfRangeException(nameof(offset));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            if (buffer.Length - offset < count)
+                throw new ArgumentException("Invalid offset/count combination");
+
+            long remaining = _resourceLength - _position;
+            if (remaining <= 0)
+                return 0;
+
+            int toRead = (int)Math.Min(count, remaining);
+            
+            var fs = EnsureFileStream();
+            fs.Seek(_resourceOffset + _position, SeekOrigin.Begin);
+            int bytesRead = fs.Read(buffer, offset, toRead);
+            _position += bytesRead;
+            
+            return bytesRead;
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(ResourceSubStream));
+
+            long newPosition = origin switch
+            {
+                SeekOrigin.Begin => offset,
+                SeekOrigin.Current => _position + offset,
+                SeekOrigin.End => _resourceLength + offset,
+                _ => throw new ArgumentException("Invalid seek origin", nameof(origin))
+            };
+
+            if (newPosition < 0 || newPosition > _resourceLength)
+                throw new ArgumentOutOfRangeException(nameof(offset));
+
+            _position = newPosition;
+            return _position;
+        }
+
+        public override void Flush()
+        {
+            // Read-only stream, nothing to flush
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotSupportedException("Cannot set length on a read-only stream.");
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            throw new NotSupportedException("Cannot write to a read-only stream.");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _fileStream?.Dispose();
+                }
+                _disposed = true;
+            }
+            base.Dispose(disposing);
+        }
     }
 }
