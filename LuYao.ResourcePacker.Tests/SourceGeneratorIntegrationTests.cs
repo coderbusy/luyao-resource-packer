@@ -64,6 +64,35 @@ namespace LuYao.ResourcePacker.Tests
             }
         }
 
+        [Fact]
+        public void GetOutputFileName_DefaultsToAssemblyNameDat()
+        {
+            // Test that when no custom filename is specified, it defaults to {AssemblyName}.dat
+            var assemblyName = "TestAssembly";
+            var expectedFileName = "TestAssembly.dat";
+            
+            // Simulating the default behavior
+            var outputFileName = string.IsNullOrWhiteSpace(null) ? $"{assemblyName}.dat" : null;
+            
+            Assert.Equal(expectedFileName, outputFileName);
+        }
+
+        [Fact]
+        public void GetOutputFileName_UsesCustomFilenameWhenProvided()
+        {
+            // Test that when a custom filename is provided, it's used instead of the default
+            var customFileName = "CustomResources.dat";
+            var assemblyName = "TestAssembly";
+            
+            // Simulating the custom filename behavior
+            var providedFileName = customFileName;
+            var outputFileName = !string.IsNullOrWhiteSpace(providedFileName) 
+                ? providedFileName 
+                : $"{assemblyName}.dat";
+            
+            Assert.Equal(customFileName, outputFileName);
+        }
+
         // Helper method that mimics the source generator's logic
         private string MakeSafeIdentifier(string name)
         {

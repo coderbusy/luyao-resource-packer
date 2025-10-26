@@ -54,6 +54,9 @@ namespace LuYao.ResourcePacker.SourceGenerator
             // Get visibility from analyzer config (default to internal)
             var visibility = GetVisibility(configOptions);
             
+            // Get output filename from analyzer config (default to {AssemblyName}.dat)
+            var outputFileName = GetOutputFileName(configOptions, assemblyName);
+            
             // Extract resource keys
             var resourceKeys = resourceFiles
                 .Select(f => GetResourceKey(f.Path))
@@ -63,7 +66,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 .ToList();
 
             // Generate source code
-            var source = GenerateSourceCode(assemblyName, className, rootNamespace, visibility, resourceKeys);
+            var source = GenerateSourceCode(assemblyName, className, rootNamespace, visibility, outputFileName, resourceKeys);
 
             // Add source to compilation
             context.AddSource($"{className}.g.cs", SourceText.From(source, Encoding.UTF8));
@@ -105,7 +108,22 @@ namespace LuYao.ResourcePacker.SourceGenerator
             return "internal";
         }
 
-        private static string GenerateSourceCode(string assemblyName, string className, string rootNamespace, string visibility, List<string> resourceKeys)
+        private static string GetOutputFileName(AnalyzerConfigOptionsProvider configOptions, string assemblyName)
+        {
+            // Try to get the output filename from global analyzer config
+            if (configOptions.GlobalOptions.TryGetValue("build_property.ResourcePackerOutputFileName", out var outputFileName))
+            {
+                if (!string.IsNullOrWhiteSpace(outputFileName))
+                {
+                    return outputFileName;
+                }
+            }
+            
+            // Default to {AssemblyName}.dat
+            return $"{assemblyName}.dat";
+        }
+
+        private static string GenerateSourceCode(string assemblyName, string className, string rootNamespace, string visibility, string outputFileName, List<string> resourceKeys)
         {
             var sb = new StringBuilder();
             
@@ -147,7 +165,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
             // Add lazy-initialized reader instance
             sb.AppendLine("        private static readonly Lazy<ResourcePackageReader> _reader = new Lazy<ResourcePackageReader>(() =>");
             sb.AppendLine("        {");
-            sb.AppendLine($"            var datFilePath = Path.Combine(AppContext.BaseDirectory, \"{assemblyName}.dat\");");
+            sb.AppendLine($"            var datFilePath = Path.Combine(AppContext.BaseDirectory, \"{outputFileName}\");");
             sb.AppendLine("            if (!File.Exists(datFilePath))");
             sb.AppendLine("            {");
             sb.AppendLine($"                throw new FileNotFoundException($\"Resource package file not found: {{datFilePath}}\");");
