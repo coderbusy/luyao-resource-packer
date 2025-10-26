@@ -59,7 +59,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
             var className = "R";
             
             // Get root namespace from compilation options or default to assembly name
-            var rootNamespace = GetRootNamespace(compilation);
+            var rootNamespace = GetRootNamespace(compilation, configOptions);
             
             // Visibility is always internal
             var visibility = "internal";
@@ -82,14 +82,15 @@ namespace LuYao.ResourcePacker.SourceGenerator
             context.AddSource($"{className}.g.cs", SourceText.From(source, Encoding.UTF8));
         }
 
-        private static string GetRootNamespace(Compilation compilation)
+        private static string GetRootNamespace(Compilation compilation, AnalyzerConfigOptionsProvider configOptions)
         {
-            // Try to get RootNamespace from compilation options
-            // First, check if there's a global namespace option
-            if (compilation.Options is CSharpCompilationOptions csharpOptions)
+            // Try to get RootNamespace from analyzer config (MSBuild property)
+            if (configOptions.GlobalOptions.TryGetValue("build_property.RootNamespace", out var rootNamespace))
             {
-                // Look for MSBuild properties that might contain the root namespace
-                // The RootNamespace is typically passed through analyzer config
+                if (!string.IsNullOrWhiteSpace(rootNamespace))
+                {
+                    return rootNamespace;
+                }
             }
             
             // Default to assembly name if no explicit root namespace is found
