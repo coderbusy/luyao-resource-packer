@@ -168,17 +168,14 @@ namespace LuYao.ResourcePacker.Tests
         }
 
         [Theory]
-        [InlineData(null, "*.res.*")]
-        [InlineData("", "*.res.*")]
-        [InlineData("C:\\SomeDir", null)]
-        [InlineData("C:\\SomeDir", "")]
+        [InlineData(null)]
+        [InlineData("")]
         public void Constructor_WithInvalidParameters_ShouldThrowArgumentException(
-            string sourceDirectory, 
-            string pattern)
+            string sourceDirectory)
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => 
-                new ResourcePacker(sourceDirectory, pattern));
+                new ResourcePacker(sourceDirectory));
         }
 
         [Fact]

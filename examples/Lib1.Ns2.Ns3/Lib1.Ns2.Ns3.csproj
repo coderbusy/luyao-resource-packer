@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
 		<ResourcePackerEnabled>true</ResourcePackerEnabled>
-		<ResourcePackerPattern>*.res.*</ResourcePackerPattern>
+		<ResourcePackerDirectory>Resources</ResourcePackerDirectory>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -18,12 +18,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="Resources\**\*.res.*" CopyToOutputDirectory="Never" />
+		<None Include="Resources\**\*" CopyToOutputDirectory="Never" />
 	</ItemGroup>
 
 	<!-- Add resource files as AdditionalFiles for source generator -->
 	<ItemGroup>
-		<AdditionalFiles Include="Resources\**\*.res.*" Visible="false" />
+		<AdditionalFiles Include="Resources\**\*" Visible="false" />
 	</ItemGroup>
 
 	<!-- For development with project references, manually import and override assembly path -->
@@ -41,7 +41,7 @@
 		  ProjectDir="$(ProjectDir)"
 		  OutputPath="$(OutputPath)"
 		  AssemblyName="$(AssemblyName)"
-		  ResourcePattern="$(ResourcePackerPattern)"
+		  ResourceDirectory="$(ResourcePackerDirectory)"
 		  OutputFileName="$(ResourcePackerOutputFileName)" />
 
 		<!-- Add .dat file to None so it gets copied to referencing projects -->
