@@ -4,7 +4,6 @@
     <ResourcePackerEnabled Condition="'$(ResourcePackerEnabled)' == ''">true</ResourcePackerEnabled>
     <ResourcePackerPattern Condition="'$(ResourcePackerPattern)' == ''">*.res.*</ResourcePackerPattern>
     <ResourcePackerAccessibility Condition="'$(ResourcePackerAccessibility)' == ''">internal</ResourcePackerAccessibility>
-    <ResourcePackerOutputFileName Condition="'$(ResourcePackerOutputFileName)' == ''">$(AssemblyName).dat</ResourcePackerOutputFileName>
   </PropertyGroup>
   
   <ItemGroup>
