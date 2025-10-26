@@ -22,8 +22,14 @@ The source generator should:
 
 ## Running the Test
 
+From the repository root:
 ```bash
 dotnet run --project samples/RootNamespaceTest/RootNamespaceTest.csproj
+```
+
+Or from this directory:
+```bash
+dotnet run
 ```
 
 Expected output:
@@ -49,7 +55,7 @@ Config resource content: {
 
 ## Verification
 
-The test program:
-1. Accesses the `R` class without qualification (proving it's in `Popcorn.Toolkit`)
-2. Verifies the namespace using reflection
-3. Reads resources to ensure functionality works correctly
+The test program verifies the fix by:
+1. Accessing the `R` class without namespace qualification (proving it's in the same `Popcorn.Toolkit` namespace as Program.cs)
+2. Using reflection to verify the namespace is exactly `Popcorn.Toolkit` 
+3. Reading resources to ensure the generated code functions correctly
