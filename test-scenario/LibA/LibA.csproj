@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Resources\**\*.res.*" CopyToOutputDirectory="Never" />
+    <None Include="Resources\**\*.res.*" />
   </ItemGroup>
 
 </Project>

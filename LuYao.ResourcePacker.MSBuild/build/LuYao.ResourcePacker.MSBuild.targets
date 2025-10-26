@@ -6,8 +6,7 @@
   <Target Name="PackResources" BeforeTargets="AssignTargetPaths" Condition="'$(ResourcePackerEnabled)' == 'true'">
     <PropertyGroup>
       <!-- Use MSBuildProjectName if AssemblyName is not set -->
-      <_AssemblyNameForPacker Condition="'$(AssemblyName)' != ''">$(AssemblyName)</_AssemblyNameForPacker>
-      <_AssemblyNameForPacker Condition="'$(AssemblyName)' == ''">$(MSBuildProjectName)</_AssemblyNameForPacker>
+      <_AssemblyNameForPacker>$([MSBuild]::ValueOrDefault('$(AssemblyName)', '$(MSBuildProjectName)'))</_AssemblyNameForPacker>
       <ResourcePackerOutputFileName Condition="'$(ResourcePackerOutputFileName)' == ''">$(_AssemblyNameForPacker).dat</ResourcePackerOutputFileName>
     </PropertyGroup>
     <ResourcePackerTask

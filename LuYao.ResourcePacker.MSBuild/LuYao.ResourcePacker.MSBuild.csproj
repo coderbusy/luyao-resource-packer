@@ -30,17 +30,17 @@
       <_PackageFiles Include="$(OutputPath)LuYao.ResourcePacker.MSBuild.dll">
         <PackagePath>tasks/$(TargetFramework)</PackagePath>
         <Visible>false</Visible>
-        <BuildAction>Content</BuildAction>
+        <BuildAction>None</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="$(OutputPath)LuYao.ResourcePacker.dll">
         <PackagePath>tasks/$(TargetFramework)</PackagePath>
         <Visible>false</Visible>
-        <BuildAction>Content</BuildAction>
+        <BuildAction>None</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="$(OutputPath)LuYao.ResourcePacker.SourceGenerator.dll">
         <PackagePath>analyzers/dotnet/cs</PackagePath>
         <Visible>false</Visible>
-        <BuildAction>Content</BuildAction>
+        <BuildAction>None</BuildAction>
       </_PackageFiles>
     </ItemGroup>
   </Target>
