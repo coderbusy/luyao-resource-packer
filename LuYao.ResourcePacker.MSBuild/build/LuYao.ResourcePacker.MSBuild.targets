@@ -27,7 +27,7 @@
 
   <!-- Add resource files as AdditionalFiles for source generator -->
   <ItemGroup>
-    <AdditionalFiles Include="$(ResourcePackerDirectory)\**\*" Visible="false" />
+    <AdditionalFiles Include="$(ResourcePackerDirectory)\**\*" />
   </ItemGroup>
 
   <!-- Reference the source generator -->
