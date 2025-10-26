@@ -34,7 +34,7 @@ namespace LuYao.ResourcePacker.Tests
             // Assert
             Assert.True(File.Exists(_outputPath));
 
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             var jsonContent = await reader.ReadResourceAsStringAsync("test");
             var txtContent = await reader.ReadResourceAsStringAsync("greeting");
 
@@ -53,7 +53,7 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Assert
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             var keys = reader.ResourceKeys.ToList();
 
             Assert.Contains("test", keys);
@@ -70,26 +70,9 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Act & Assert
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             await Assert.ThrowsAsync<KeyNotFoundException>(() => 
                 reader.ReadResourceAsync("non_existent_key"));
-        }
-
-        [Fact]
-        public async Task ReadResource_AfterDispose_ShouldThrowException()
-        {
-            // Arrange
-            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
-            packer.PackResources(_outputPath);
-
-            // Act
-            var reader = new ResourcePackageReader(_outputPath);
-            reader.Dispose();
-
-            // Assert
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => 
-                reader.ReadResourceAsync("test"));
         }
 
         [Fact]
@@ -104,7 +87,7 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Assert
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             Assert.Empty(reader.ResourceKeys);
         }
 
@@ -140,7 +123,7 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Assert
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             var keys = reader.ResourceKeys.ToList();
             var sortedKeys = keys.OrderBy(k => k).ToList();
             
@@ -207,7 +190,7 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Act
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             var content = await reader.ReadResourceAsStringAsync("greeting", Encoding.UTF8);
 
             // Assert
@@ -223,7 +206,7 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Act
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             var bytes = reader.ReadResource("greeting");
 
             // Assert
@@ -242,7 +225,7 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Act
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             var content = reader.ReadResourceAsString("greeting");
 
             // Assert
@@ -258,7 +241,7 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Act
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             var content = reader.ReadResourceAsString("test", Encoding.UTF8);
 
             // Assert
@@ -274,7 +257,7 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Act
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             using var stream = reader.GetStream("greeting");
 
             // Assert
@@ -296,60 +279,9 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Act & Assert
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             Assert.Throws<KeyNotFoundException>(() => 
                 reader.GetStream("non_existent_key"));
-        }
-
-        [Fact]
-        public void ReadResourceSync_AfterDispose_ShouldThrowException()
-        {
-            // Arrange
-            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
-            packer.PackResources(_outputPath);
-
-            // Act
-            var reader = new ResourcePackageReader(_outputPath);
-            reader.Dispose();
-
-            // Assert
-            Assert.Throws<ObjectDisposedException>(() => 
-                reader.ReadResource("test"));
-        }
-
-        [Fact]
-        public void ReadResourceAsStringSync_AfterDispose_ShouldThrowException()
-        {
-            // Arrange
-            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
-            packer.PackResources(_outputPath);
-
-            // Act
-            var reader = new ResourcePackageReader(_outputPath);
-            reader.Dispose();
-
-            // Assert
-            Assert.Throws<ObjectDisposedException>(() => 
-                reader.ReadResourceAsString("test"));
-        }
-
-        [Fact]
-        public void GetStream_AfterDispose_ShouldThrowException()
-        {
-            // Arrange
-            var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
-            packer.PackResources(_outputPath);
-
-            // Act
-            var reader = new ResourcePackageReader(_outputPath);
-            reader.Dispose();
-
-            // Assert
-            Assert.Throws<ObjectDisposedException>(() => 
-                reader.GetStream("test"));
         }
 
         [Fact]
@@ -361,7 +293,7 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Act
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             var exists = reader.ContainsKey("test");
 
             // Assert
@@ -377,7 +309,7 @@ namespace LuYao.ResourcePacker.Tests
             packer.PackResources(_outputPath);
 
             // Act
-            using var reader = new ResourcePackageReader(_outputPath);
+            var reader = new ResourcePackageReader(_outputPath);
             var exists = reader.ContainsKey("non_existent_key");
 
             // Assert

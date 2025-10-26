@@ -8,12 +8,12 @@ namespace LuYao.ResourcePacker
 {
     /// <summary>
     /// Provides functionality to read resources from a packaged resource file.
+    /// This class is thread-safe for concurrent read operations by creating independent FileStream instances per operation.
     /// </summary>
-    public class ResourcePackageReader : IDisposable
+    public class ResourcePackageReader
     {
-        private readonly FileStream _fileStream;
+        private readonly string _filePath;
         private readonly Dictionary<string, ResourceEntry> _resourceIndex;
-        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourcePackageReader"/> class.
@@ -21,14 +21,15 @@ namespace LuYao.ResourcePacker
         /// <param name="filePath">The path to the resource package file.</param>
         public ResourcePackageReader(string filePath)
         {
-            _fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            _filePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
             _resourceIndex = new Dictionary<string, ResourceEntry>();
             LoadIndex();
         }
 
         private void LoadIndex()
         {
-            using var reader = new BinaryReader(_fileStream, System.Text.Encoding.UTF8, leaveOpen: true);
+            using var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var reader = new BinaryReader(fileStream, System.Text.Encoding.UTF8, leaveOpen: false);
             
             // Read version number
             var version = reader.ReadByte();
@@ -50,7 +51,7 @@ namespace LuYao.ResourcePacker
             }
 
             // Calculate offsets based on the current position
-            long currentOffset = _fileStream.Position;
+            long currentOffset = fileStream.Position;
             foreach (var (key, length) in indexEntries)
             {
                 _resourceIndex[key] = new ResourceEntry
@@ -82,18 +83,29 @@ namespace LuYao.ResourcePacker
         /// </summary>
         /// <param name="resourceKey">The key of the resource to read.</param>
         /// <returns>A task that represents the asynchronous read operation.</returns>
-        public async Task<byte[]> ReadResourceAsync(string resourceKey)
+        public Task<byte[]> ReadResourceAsync(string resourceKey)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ResourcePackageReader));
-
             if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
             var buffer = new byte[entry.Length];
-            _fileStream.Seek(entry.Offset, SeekOrigin.Begin);
-            await _fileStream.ReadAsync(buffer, 0, buffer.Length);
-            return buffer;
+            
+            // Create a new FileStream for this read operation (thread-safe via FileShare.Read)
+            using (var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                fileStream.Seek(entry.Offset, SeekOrigin.Begin);
+                
+                int totalRead = 0;
+                while (totalRead < entry.Length)
+                {
+                    int bytesRead = fileStream.Read(buffer, totalRead, entry.Length - totalRead);
+                    if (bytesRead == 0)
+                        throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
+                    totalRead += bytesRead;
+                }
+            }
+            
+            return Task.FromResult(buffer);
         }
 
         /// <summary>
@@ -126,22 +138,24 @@ namespace LuYao.ResourcePacker
         /// <returns>The resource data as a byte array.</returns>
         public byte[] ReadResource(string resourceKey)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ResourcePackageReader));
-
             if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
             var buffer = new byte[entry.Length];
-            _fileStream.Seek(entry.Offset, SeekOrigin.Begin);
             
-            int totalRead = 0;
-            while (totalRead < entry.Length)
+            // Create a new FileStream for this read operation (thread-safe via FileShare.Read)
+            using (var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                int bytesRead = _fileStream.Read(buffer, totalRead, entry.Length - totalRead);
-                if (bytesRead == 0)
-                    throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
-                totalRead += bytesRead;
+                fileStream.Seek(entry.Offset, SeekOrigin.Begin);
+                
+                int totalRead = 0;
+                while (totalRead < entry.Length)
+                {
+                    int bytesRead = fileStream.Read(buffer, totalRead, entry.Length - totalRead);
+                    if (bytesRead == 0)
+                        throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
+                    totalRead += bytesRead;
+                }
             }
             
             return buffer;
@@ -172,31 +186,17 @@ namespace LuYao.ResourcePacker
 
         /// <summary>
         /// Gets a read-only stream for the specified resource.
+        /// This allows streaming large resources without loading all data into memory.
         /// </summary>
         /// <param name="resourceKey">The key of the resource to read.</param>
         /// <returns>A read-only stream containing the resource data.</returns>
         public Stream GetStream(string resourceKey)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(ResourcePackageReader));
-
             if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
-            // Create a SubStream wrapper that provides a read-only view of a portion of the file
-            return new SubStream(_fileStream, entry.Offset, entry.Length);
-        }
-
-        /// <summary>
-        /// Releases the resources used by the <see cref="ResourcePackageReader"/>.
-        /// </summary>
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _fileStream?.Dispose();
-                _disposed = true;
-            }
+            // Create a SubStream for streaming access without loading entire resource into memory
+            return new ResourceSubStream(_filePath, entry.Offset, entry.Length);
         }
     }
 
@@ -207,34 +207,49 @@ namespace LuYao.ResourcePacker
     }
 
     /// <summary>
-    /// A stream wrapper that provides a read-only view of a portion of another stream.
+    /// A read-only stream that provides access to a portion of a resource package file.
+    /// This allows streaming large resources without loading all data into memory.
+    /// Each instance creates its own FileStream for thread-safe operation.
     /// </summary>
-    internal class SubStream : Stream
+    internal class ResourceSubStream : Stream
     {
-        private readonly Stream _baseStream;
-        private readonly long _offset;
-        private readonly long _length;
+        private readonly string _filePath;
+        private readonly long _resourceOffset;
+        private readonly long _resourceLength;
         private long _position;
+        private FileStream? _fileStream;
+        private bool _disposed;
 
-        public SubStream(Stream baseStream, long offset, long length)
+        public ResourceSubStream(string filePath, long offset, long length)
         {
-            _baseStream = baseStream ?? throw new ArgumentNullException(nameof(baseStream));
-            _offset = offset;
-            _length = length;
+            _filePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+            _resourceOffset = offset;
+            _resourceLength = length;
             _position = 0;
         }
 
-        public override bool CanRead => true;
-        public override bool CanSeek => true;
+        private FileStream EnsureFileStream()
+        {
+            if (_fileStream == null)
+            {
+                _fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            }
+            return _fileStream;
+        }
+
+        public override bool CanRead => !_disposed;
+        public override bool CanSeek => !_disposed;
         public override bool CanWrite => false;
-        public override long Length => _length;
+        public override long Length => _resourceLength;
 
         public override long Position
         {
             get => _position;
             set
             {
-                if (value < 0 || value > _length)
+                if (_disposed)
+                    throw new ObjectDisposedException(nameof(ResourceSubStream));
+                if (value < 0 || value > _resourceLength)
                     throw new ArgumentOutOfRangeException(nameof(value));
                 _position = value;
             }
@@ -242,6 +257,8 @@ namespace LuYao.ResourcePacker
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(ResourceSubStream));
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer));
             if (offset < 0)
@@ -251,14 +268,15 @@ namespace LuYao.ResourcePacker
             if (buffer.Length - offset < count)
                 throw new ArgumentException("Invalid offset/count combination");
 
-            long remaining = _length - _position;
+            long remaining = _resourceLength - _position;
             if (remaining <= 0)
                 return 0;
 
             int toRead = (int)Math.Min(count, remaining);
             
-            _baseStream.Seek(_offset + _position, SeekOrigin.Begin);
-            int bytesRead = _baseStream.Read(buffer, offset, toRead);
+            var fs = EnsureFileStream();
+            fs.Seek(_resourceOffset + _position, SeekOrigin.Begin);
+            int bytesRead = fs.Read(buffer, offset, toRead);
             _position += bytesRead;
             
             return bytesRead;
@@ -266,15 +284,18 @@ namespace LuYao.ResourcePacker
 
         public override long Seek(long offset, SeekOrigin origin)
         {
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(ResourceSubStream));
+
             long newPosition = origin switch
             {
                 SeekOrigin.Begin => offset,
                 SeekOrigin.Current => _position + offset,
-                SeekOrigin.End => _length + offset,
+                SeekOrigin.End => _resourceLength + offset,
                 _ => throw new ArgumentException("Invalid seek origin", nameof(origin))
             };
 
-            if (newPosition < 0 || newPosition > _length)
+            if (newPosition < 0 || newPosition > _resourceLength)
                 throw new ArgumentOutOfRangeException(nameof(offset));
 
             _position = newPosition;
@@ -294,6 +315,19 @@ namespace LuYao.ResourcePacker
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException("Cannot write to a read-only stream.");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _fileStream?.Dispose();
+                }
+                _disposed = true;
+            }
+            base.Dispose(disposing);
         }
     }
 }
