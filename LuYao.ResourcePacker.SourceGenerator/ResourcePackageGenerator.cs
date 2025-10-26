@@ -124,10 +124,8 @@ namespace LuYao.ResourcePacker.SourceGenerator
             
             // Check if the file path contains the resource directory
             // Handle both "Resources" and "Resources/" formats
-            return normalizedPath.Contains($"/{normalizedDir}/") || 
-                   normalizedPath.Contains($"\\{resourceDirectory}\\") ||
-                   normalizedPath.EndsWith($"/{normalizedDir}") ||
-                   normalizedPath.EndsWith($"\\{resourceDirectory}");
+            return normalizedPath.Contains($"/{normalizedDir}/") ||
+                   normalizedPath.EndsWith($"/{normalizedDir}");
         }
 
         private static string GetOutputFileName(AnalyzerConfigOptionsProvider configOptions, string assemblyName)
