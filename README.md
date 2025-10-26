@@ -30,7 +30,7 @@ dotnet add package LuYao.ResourcePacker.MSBuild
 
 ### PackageReference
 ```xml
-<PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="0.1.0" />
+<PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="0.1.1" />
 ```
 
 > **Note**: Installing `LuYao.ResourcePacker.MSBuild` will automatically include the core `LuYao.ResourcePacker` library and the source generator as dependencies.
