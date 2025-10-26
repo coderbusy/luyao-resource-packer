@@ -8,11 +8,13 @@ namespace LuYao.ResourcePacker
 {
     /// <summary>
     /// Provides functionality to read resources from a packaged resource file.
+    /// This class is thread-safe for concurrent read operations.
     /// </summary>
     public class ResourcePackageReader : IDisposable
     {
         private readonly FileStream _fileStream;
         private readonly Dictionary<string, ResourceEntry> _resourceIndex;
+        private readonly object _lock = new object();
         private bool _disposed;
 
         /// <summary>
@@ -91,9 +93,15 @@ namespace LuYao.ResourcePacker
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
             var buffer = new byte[entry.Length];
-            _fileStream.Seek(entry.Offset, SeekOrigin.Begin);
-            await _fileStream.ReadAsync(buffer, 0, buffer.Length);
-            return buffer;
+            
+            // Lock to ensure thread-safe access to FileStream
+            lock (_lock)
+            {
+                _fileStream.Seek(entry.Offset, SeekOrigin.Begin);
+                _fileStream.Read(buffer, 0, buffer.Length);
+            }
+            
+            return await Task.FromResult(buffer);
         }
 
         /// <summary>
@@ -133,15 +141,20 @@ namespace LuYao.ResourcePacker
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
             var buffer = new byte[entry.Length];
-            _fileStream.Seek(entry.Offset, SeekOrigin.Begin);
             
-            int totalRead = 0;
-            while (totalRead < entry.Length)
+            // Lock to ensure thread-safe access to FileStream
+            lock (_lock)
             {
-                int bytesRead = _fileStream.Read(buffer, totalRead, entry.Length - totalRead);
-                if (bytesRead == 0)
-                    throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
-                totalRead += bytesRead;
+                _fileStream.Seek(entry.Offset, SeekOrigin.Begin);
+                
+                int totalRead = 0;
+                while (totalRead < entry.Length)
+                {
+                    int bytesRead = _fileStream.Read(buffer, totalRead, entry.Length - totalRead);
+                    if (bytesRead == 0)
+                        throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
+                    totalRead += bytesRead;
+                }
             }
             
             return buffer;
@@ -184,7 +197,7 @@ namespace LuYao.ResourcePacker
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
             // Create a SubStream wrapper that provides a read-only view of a portion of the file
-            return new SubStream(_fileStream, entry.Offset, entry.Length);
+            return new SubStream(_fileStream, entry.Offset, entry.Length, _lock);
         }
 
         /// <summary>
@@ -208,17 +221,20 @@ namespace LuYao.ResourcePacker
 
     /// <summary>
     /// A stream wrapper that provides a read-only view of a portion of another stream.
+    /// This class is thread-safe when used with a lock object.
     /// </summary>
     internal class SubStream : Stream
     {
         private readonly Stream _baseStream;
         private readonly long _offset;
         private readonly long _length;
+        private readonly object _lock;
         private long _position;
 
-        public SubStream(Stream baseStream, long offset, long length)
+        public SubStream(Stream baseStream, long offset, long length, object lockObject)
         {
             _baseStream = baseStream ?? throw new ArgumentNullException(nameof(baseStream));
+            _lock = lockObject ?? throw new ArgumentNullException(nameof(lockObject));
             _offset = offset;
             _length = length;
             _position = 0;
@@ -256,9 +272,15 @@ namespace LuYao.ResourcePacker
                 return 0;
 
             int toRead = (int)Math.Min(count, remaining);
+            int bytesRead;
             
-            _baseStream.Seek(_offset + _position, SeekOrigin.Begin);
-            int bytesRead = _baseStream.Read(buffer, offset, toRead);
+            // Lock to ensure thread-safe access to the base stream
+            lock (_lock)
+            {
+                _baseStream.Seek(_offset + _position, SeekOrigin.Begin);
+                bytesRead = _baseStream.Read(buffer, offset, toRead);
+            }
+            
             _position += bytesRead;
             
             return bytesRead;
