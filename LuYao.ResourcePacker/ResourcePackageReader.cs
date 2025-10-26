@@ -8,13 +8,12 @@ namespace LuYao.ResourcePacker
 {
     /// <summary>
     /// Provides functionality to read resources from a packaged resource file.
-    /// This class is thread-safe for concurrent read operations.
+    /// This class is thread-safe for concurrent read operations by creating independent FileStream instances per operation.
     /// </summary>
     public class ResourcePackageReader : IDisposable
     {
-        private readonly FileStream _fileStream;
+        private readonly string _filePath;
         private readonly Dictionary<string, ResourceEntry> _resourceIndex;
-        private readonly object _lock = new object();
         private bool _disposed;
 
         /// <summary>
@@ -23,14 +22,15 @@ namespace LuYao.ResourcePacker
         /// <param name="filePath">The path to the resource package file.</param>
         public ResourcePackageReader(string filePath)
         {
-            _fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            _filePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
             _resourceIndex = new Dictionary<string, ResourceEntry>();
             LoadIndex();
         }
 
         private void LoadIndex()
         {
-            using var reader = new BinaryReader(_fileStream, System.Text.Encoding.UTF8, leaveOpen: true);
+            using var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var reader = new BinaryReader(fileStream, System.Text.Encoding.UTF8, leaveOpen: false);
             
             // Read version number
             var version = reader.ReadByte();
@@ -52,7 +52,7 @@ namespace LuYao.ResourcePacker
             }
 
             // Calculate offsets based on the current position
-            long currentOffset = _fileStream.Position;
+            long currentOffset = fileStream.Position;
             foreach (var (key, length) in indexEntries)
             {
                 _resourceIndex[key] = new ResourceEntry
@@ -94,15 +94,15 @@ namespace LuYao.ResourcePacker
 
             var buffer = new byte[entry.Length];
             
-            // Lock to ensure thread-safe access to FileStream
-            lock (_lock)
+            // Create a new FileStream for this read operation (thread-safe via FileShare.Read)
+            using (var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                _fileStream.Seek(entry.Offset, SeekOrigin.Begin);
+                fileStream.Seek(entry.Offset, SeekOrigin.Begin);
                 
                 int totalRead = 0;
                 while (totalRead < entry.Length)
                 {
-                    int bytesRead = _fileStream.Read(buffer, totalRead, entry.Length - totalRead);
+                    int bytesRead = fileStream.Read(buffer, totalRead, entry.Length - totalRead);
                     if (bytesRead == 0)
                         throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
                     totalRead += bytesRead;
@@ -150,15 +150,15 @@ namespace LuYao.ResourcePacker
 
             var buffer = new byte[entry.Length];
             
-            // Lock to ensure thread-safe access to FileStream
-            lock (_lock)
+            // Create a new FileStream for this read operation (thread-safe via FileShare.Read)
+            using (var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                _fileStream.Seek(entry.Offset, SeekOrigin.Begin);
+                fileStream.Seek(entry.Offset, SeekOrigin.Begin);
                 
                 int totalRead = 0;
                 while (totalRead < entry.Length)
                 {
-                    int bytesRead = _fileStream.Read(buffer, totalRead, entry.Length - totalRead);
+                    int bytesRead = fileStream.Read(buffer, totalRead, entry.Length - totalRead);
                     if (bytesRead == 0)
                         throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
                     totalRead += bytesRead;
@@ -204,8 +204,9 @@ namespace LuYao.ResourcePacker
             if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
-            // Create a SubStream wrapper that provides a read-only view of a portion of the file
-            return new SubStream(_fileStream, entry.Offset, entry.Length, _lock);
+            // Read the resource data into memory and return a MemoryStream
+            var buffer = ReadResource(resourceKey);
+            return new MemoryStream(buffer, writable: false);
         }
 
         /// <summary>
@@ -213,11 +214,7 @@ namespace LuYao.ResourcePacker
         /// </summary>
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _fileStream?.Dispose();
-                _disposed = true;
-            }
+            _disposed = true;
         }
     }
 
@@ -225,105 +222,5 @@ namespace LuYao.ResourcePacker
     {
         public long Offset { get; set; }
         public int Length { get; set; }
-    }
-
-    /// <summary>
-    /// A stream wrapper that provides a read-only view of a portion of another stream.
-    /// This class is thread-safe when used with a lock object.
-    /// </summary>
-    internal class SubStream : Stream
-    {
-        private readonly Stream _baseStream;
-        private readonly long _offset;
-        private readonly long _length;
-        private readonly object _lock;
-        private long _position;
-
-        public SubStream(Stream baseStream, long offset, long length, object lockObject)
-        {
-            _baseStream = baseStream ?? throw new ArgumentNullException(nameof(baseStream));
-            _lock = lockObject ?? throw new ArgumentNullException(nameof(lockObject));
-            _offset = offset;
-            _length = length;
-            _position = 0;
-        }
-
-        public override bool CanRead => true;
-        public override bool CanSeek => true;
-        public override bool CanWrite => false;
-        public override long Length => _length;
-
-        public override long Position
-        {
-            get => _position;
-            set
-            {
-                if (value < 0 || value > _length)
-                    throw new ArgumentOutOfRangeException(nameof(value));
-                _position = value;
-            }
-        }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            if (buffer == null)
-                throw new ArgumentNullException(nameof(buffer));
-            if (offset < 0)
-                throw new ArgumentOutOfRangeException(nameof(offset));
-            if (count < 0)
-                throw new ArgumentOutOfRangeException(nameof(count));
-            if (buffer.Length - offset < count)
-                throw new ArgumentException("Invalid offset/count combination");
-
-            long remaining = _length - _position;
-            if (remaining <= 0)
-                return 0;
-
-            int toRead = (int)Math.Min(count, remaining);
-            int bytesRead;
-            
-            // Lock to ensure thread-safe access to the base stream
-            lock (_lock)
-            {
-                _baseStream.Seek(_offset + _position, SeekOrigin.Begin);
-                bytesRead = _baseStream.Read(buffer, offset, toRead);
-            }
-            
-            _position += bytesRead;
-            
-            return bytesRead;
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            long newPosition = origin switch
-            {
-                SeekOrigin.Begin => offset,
-                SeekOrigin.Current => _position + offset,
-                SeekOrigin.End => _length + offset,
-                _ => throw new ArgumentException("Invalid seek origin", nameof(origin))
-            };
-
-            if (newPosition < 0 || newPosition > _length)
-                throw new ArgumentOutOfRangeException(nameof(offset));
-
-            _position = newPosition;
-            return _position;
-        }
-
-        public override void Flush()
-        {
-            // Read-only stream, nothing to flush
-        }
-
-        public override void SetLength(long value)
-        {
-            throw new NotSupportedException("Cannot set length on a read-only stream.");
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            throw new NotSupportedException("Cannot write to a read-only stream.");
-        }
     }
 }
