@@ -26,7 +26,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
 
             // Act
             packer.PackResources(_outputPath);
@@ -47,7 +47,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
 
             // Act
             packer.PackResources(_outputPath);
@@ -66,7 +66,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
             packer.PackResources(_outputPath);
 
             // Act & Assert
@@ -81,7 +81,7 @@ namespace LuYao.ResourcePacker.Tests
             // Arrange
             var emptyDir = Path.Combine(_tempDirectory, "empty");
             Directory.CreateDirectory(emptyDir);
-            var packer = new ResourcePacker(emptyDir, "*.res.*");
+            var packer = new ResourcePacker(emptyDir);
 
             // Act
             packer.PackResources(_outputPath);
@@ -99,8 +99,8 @@ namespace LuYao.ResourcePacker.Tests
             var outputPath1 = Path.Combine(_tempDirectory, "test1.dat");
             var outputPath2 = Path.Combine(_tempDirectory, "test2.dat");
             
-            var packer1 = new ResourcePacker(sourceDir, "*.res.*");
-            var packer2 = new ResourcePacker(sourceDir, "*.res.*");
+            var packer1 = new ResourcePacker(sourceDir);
+            var packer2 = new ResourcePacker(sourceDir);
 
             // Act
             packer1.PackResources(outputPath1);
@@ -117,7 +117,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
 
             // Act
             packer.PackResources(_outputPath);
@@ -135,7 +135,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
 
             // Act
             packer.PackResources(_outputPath);
@@ -183,7 +183,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
             packer.PackResources(_outputPath);
 
             // Act
@@ -199,7 +199,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
             packer.PackResources(_outputPath);
 
             // Act
@@ -218,7 +218,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
             packer.PackResources(_outputPath);
 
             // Act
@@ -234,7 +234,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
             packer.PackResources(_outputPath);
 
             // Act
@@ -250,7 +250,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
             packer.PackResources(_outputPath);
 
             // Act
@@ -272,7 +272,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
             packer.PackResources(_outputPath);
 
             // Act & Assert
@@ -286,7 +286,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
             packer.PackResources(_outputPath);
 
             // Act
@@ -302,7 +302,7 @@ namespace LuYao.ResourcePacker.Tests
         {
             // Arrange
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
             packer.PackResources(_outputPath);
 
             // Act
