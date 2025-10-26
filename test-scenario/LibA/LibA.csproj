@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Resources\**\*.res.*" />
+  </ItemGroup>
+
+</Project>

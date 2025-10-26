@@ -5,6 +5,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Description>MSBuild tasks for LuYao.ResourcePacker - enables automatic resource file packaging during build</Description>
     <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LuYao.ResourcePacker\LuYao.ResourcePacker.csproj" PrivateAssets="all" />
+    <!-- Reference to runtime library - will be added as a NuGet dependency -->
+    <ProjectReference Include="..\LuYao.ResourcePacker\LuYao.ResourcePacker.csproj" PrivateAssets="none" />
+    <!-- MSBuild task and Source Generator are not exposed to consumers -->
     <ProjectReference Include="..\LuYao.ResourcePacker.SourceGenerator\LuYao.ResourcePacker.SourceGenerator.csproj" PrivateAssets="all" />
   </ItemGroup>
 
@@ -23,15 +26,21 @@
 
   <Target Name="PackTaskDependencies" BeforeTargets="GenerateNuspec">
     <ItemGroup>
+      <!-- Include the MSBuild task DLL itself -->
+      <_PackageFiles Include="$(OutputPath)LuYao.ResourcePacker.MSBuild.dll">
+        <PackagePath>tasks/$(TargetFramework)</PackagePath>
+        <Visible>false</Visible>
+        <BuildAction>None</BuildAction>
+      </_PackageFiles>
       <_PackageFiles Include="$(OutputPath)LuYao.ResourcePacker.dll">
         <PackagePath>tasks/$(TargetFramework)</PackagePath>
         <Visible>false</Visible>
-        <BuildAction>Content</BuildAction>
+        <BuildAction>None</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="$(OutputPath)LuYao.ResourcePacker.SourceGenerator.dll">
         <PackagePath>analyzers/dotnet/cs</PackagePath>
         <Visible>false</Visible>
-        <BuildAction>Content</BuildAction>
+        <BuildAction>None</BuildAction>
       </_PackageFiles>
     </ItemGroup>
   </Target>
