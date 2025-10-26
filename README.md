@@ -9,12 +9,12 @@ LuYao.ResourcePacker is a .NET library for packaging and accessing resource file
 ## Features
 
 - Pack multiple resource files into a single .dat file during build
-- Resource file scanning based on configurable patterns (default: *.res.*)
+- Directory-based resource scanning (default: Resources directory)
 - MSBuild integration
 - Simple runtime API for resource access
 - Async support
 - Configurable through MSBuild properties
-- **NEW: C# Source Generator for strongly-typed resource access**
+- **C# Source Generator for strongly-typed resource access with fixed "R" class (Android-style)**
 
 ## Installation
 
@@ -39,12 +39,12 @@ dotnet add package LuYao.ResourcePacker.MSBuild
 
 ### 1. Basic Setup
 
-Mark your resource files with the `.res.` pattern:
+Place your resource files in the `Resources` directory:
 ```
 Resources/
-  ├── message.res.json
-  ├── config.res.txt
-  └── template.res.html
+  ├── message.json
+  ├── config.txt
+  └── template.html
 ```
 
 The resources will be automatically packed into a .dat file during build.
@@ -72,26 +72,26 @@ foreach (var key in reader.ResourceKeys)
 }
 ```
 
-### 3. Runtime Access - Strongly-Typed API (NEW)
+### 3. Runtime Access - Strongly-Typed API
 
-The source generator automatically creates a static class named `{AssemblyName}ResourceAccess` in the project's root namespace with strongly-typed access to your resources:
+The source generator automatically creates an internal static class named `R` (Android-style) in the project's root namespace with strongly-typed access to your resources:
 
 ```csharp
 using LuYao.ResourcePacker;
 using YourAssembly; // Import the namespace where the generated class resides
 
 // Access resource keys as constants
-Console.WriteLine(YourAssemblyResourceAccess.Keys.message);
-Console.WriteLine(YourAssemblyResourceAccess.Keys.config);
-Console.WriteLine(YourAssemblyResourceAccess.Keys.template);
+Console.WriteLine(R.Keys.message);
+Console.WriteLine(R.Keys.config);
+Console.WriteLine(R.Keys.template);
 
 // Read resources using generated methods
-string message = await YourAssemblyResourceAccess.ReadMessageAsyncAsString();
-byte[] configBytes = await YourAssemblyResourceAccess.ReadConfigAsync();
-string template = await YourAssemblyResourceAccess.ReadTemplateAsyncAsString();
+string message = await R.ReadMessageAsyncAsString();
+byte[] configBytes = await R.ReadConfigAsync();
+string template = await R.ReadTemplateAsyncAsString();
 
 // Access the underlying reader if needed
-ResourcePackageReader reader = YourAssemblyResourceAccess.Reader;
+ResourcePackageReader reader = R.Reader;
 ```
 
 **Benefits of the Strongly-Typed API:**
@@ -99,6 +99,7 @@ ResourcePackageReader reader = YourAssemblyResourceAccess.Reader;
 - Compile-time checking of resource names
 - No magic strings in your code
 - Auto-generated documentation comments
+- Simple, consistent "R" class name across all projects
 
 ## Configuration
 
@@ -109,8 +110,8 @@ In your .csproj file:
     <!-- Enable/disable resource packing -->
     <ResourcePackerEnabled>true</ResourcePackerEnabled>
     
-    <!-- Custom file pattern -->
-    <ResourcePackerPattern>*.res.*</ResourcePackerPattern>
+    <!-- Custom resource directory (default: Resources) -->
+    <ResourcePackerDirectory>Resources</ResourcePackerDirectory>
     
     <!-- Custom output filename -->
     <ResourcePackerOutputFileName>$(AssemblyName).dat</ResourcePackerOutputFileName>
@@ -119,20 +120,21 @@ In your .csproj file:
 
 ## How the Source Generator Works
 
-When you add resource files (e.g., `test.res.txt`, `config.res.json`) to your project:
+When you add resource files (e.g., `test.txt`, `config.json`) to your Resources directory:
 
-1. During build, the MSBuild task scans for files matching the pattern `*.res.*`
+1. During build, the MSBuild task scans all files in the `Resources` directory
 2. These files are packaged into a `.dat` file
-3. The source generator creates a static class in the project's root namespace (defaults to assembly name) with:
-   - A nested `Keys` class containing const strings for each resource
+3. The source generator creates an internal static class named `R` in the project's root namespace (defaults to assembly name) with:
+   - A nested `Keys` class containing const strings for each resource (filename without extension)
    - A static `Reader` property providing access to the `ResourcePackageReader`
    - Strongly-typed methods like `ReadTestAsync()` and `ReadConfigAsync()`
+4. Resource keys are generated from filenames (without extension), with invalid C# identifier characters replaced by underscores
 
 Example generated code:
 ```csharp
 namespace YourAssembly
 {
-    public static class YourAssemblyResourceAccess
+    internal static class R
     {
         public static class Keys
         {

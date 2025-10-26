@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <ResourcePackerDirectory>Resources</ResourcePackerDirectory>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Resources\**\*.res.*" CopyToOutputDirectory="Never" />
+    <None Include="Resources\**\*" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
 </Project>

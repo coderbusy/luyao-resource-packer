@@ -29,13 +29,15 @@ namespace LuYao.ResourcePacker.Tests.MSBuild
         {
             // Arrange
             var sourceDir = Path.Combine(_tempDirectory, "source");
+            var resourceDir = Path.Combine(sourceDir, "Resources");
             var outputDir = Path.Combine(_tempDirectory, "output");
             Directory.CreateDirectory(sourceDir);
+            Directory.CreateDirectory(resourceDir);
             Directory.CreateDirectory(outputDir);
 
             // 创建测试资源文件
             File.WriteAllText(
-                Path.Combine(sourceDir, "test.res.txt"), 
+                Path.Combine(resourceDir, "test.txt"), 
                 "Test Content"
             );
 
@@ -45,7 +47,7 @@ namespace LuYao.ResourcePacker.Tests.MSBuild
                 ProjectDir = sourceDir,
                 OutputPath = outputDir,
                 AssemblyName = "TestAssembly",
-                ResourcePattern = "*.res.*"
+                ResourceDirectory = "Resources"
             };
 
             // Act
@@ -67,7 +69,7 @@ namespace LuYao.ResourcePacker.Tests.MSBuild
                 ProjectDir = "C:\\NonExistentDir",
                 OutputPath = "C:\\NonExistentDir",
                 AssemblyName = "TestAssembly",
-                ResourcePattern = "*.res.*"
+                ResourceDirectory = "Resources"
             };
 
             // Act
@@ -93,7 +95,7 @@ namespace LuYao.ResourcePacker.Tests.MSBuild
                 ProjectDir = sourceDir,
                 OutputPath = outputDir,
                 AssemblyName = "TestAssembly",
-                ResourcePattern = "*.res.*",
+                ResourceDirectory = "Resources",
                 OutputFileName = "Custom.dat"
             };
 

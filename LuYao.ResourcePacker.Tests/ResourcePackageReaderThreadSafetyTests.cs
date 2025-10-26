@@ -22,7 +22,7 @@ namespace LuYao.ResourcePacker.Tests
             
             // Create test resource package
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
-            var packer = new ResourcePacker(sourceDir, "*.res.*");
+            var packer = new ResourcePacker(sourceDir);
             packer.PackResources(_outputPath);
         }
 

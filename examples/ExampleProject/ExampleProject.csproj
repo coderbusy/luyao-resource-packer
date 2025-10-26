@@ -6,9 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ResourcePackerEnabled>true</ResourcePackerEnabled>
-    <ResourcePackerPattern>*.res.*</ResourcePackerPattern>
+    <ResourcePackerDirectory>Resources</ResourcePackerDirectory>
     <ResourcePackerOutputFileName>$(AssemblyName).dat</ResourcePackerOutputFileName>
-    <ResourcePackerAccessibility>public</ResourcePackerAccessibility>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -21,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Resources\**\*.res.*" CopyToOutputDirectory="Never" />
+    <None Include="Resources\**\*" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
   <!-- 
@@ -44,7 +43,7 @@
       ProjectDir="$(ProjectDir)"
       OutputPath="$(OutputPath)"
       AssemblyName="$(AssemblyName)"
-      ResourcePattern="$(ResourcePackerPattern)"
+      ResourceDirectory="$(ResourcePackerDirectory)"
       OutputFileName="$(ResourcePackerOutputFileName)" />
       
     <!-- Add .dat file to None so it gets copied to referencing projects -->
@@ -58,7 +57,7 @@
 
   <!-- Add resource files as AdditionalFiles for source generator -->
   <ItemGroup>
-    <AdditionalFiles Include="Resources\**\*.res.*" Visible="false" />
+    <AdditionalFiles Include="Resources\**\*" Visible="false" />
   </ItemGroup>
 
 </Project>

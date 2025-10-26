@@ -39,12 +39,12 @@ namespace LuYao.ResourcePacker.SourceGenerator
             System.Collections.Immutable.ImmutableArray<AdditionalText> resourceFiles,
             AnalyzerConfigOptionsProvider configOptions)
         {
-            // Get the resource pattern from analyzer config (default to *.res.*)
-            var resourcePattern = GetResourcePattern(configOptions);
+            // Get the resource directory from analyzer config (default to "Resources")
+            var resourceDirectory = GetResourceDirectory(configOptions);
             
-            // Filter additional files to only include those matching the resource pattern
+            // Filter additional files to only include those in the resource directory
             var filteredResourceFiles = resourceFiles
-                .Where(f => MatchesPattern(Path.GetFileName(f.Path), resourcePattern))
+                .Where(f => IsInResourceDirectory(f.Path, resourceDirectory))
                 .ToList();
             
             if (filteredResourceFiles.Count == 0)
@@ -54,20 +54,22 @@ namespace LuYao.ResourcePacker.SourceGenerator
 
             // Get assembly name
             var assemblyName = compilation.AssemblyName ?? "Assembly";
-            var className = $"{assemblyName}ResourceAccess";
+            
+            // Fixed class name to "R" (like Android)
+            var className = "R";
             
             // Get root namespace from compilation options or default to assembly name
             var rootNamespace = GetRootNamespace(compilation);
             
-            // Get visibility from analyzer config (default to internal)
-            var visibility = GetVisibility(configOptions);
+            // Visibility is always internal
+            var visibility = "internal";
             
             // Get output filename from analyzer config (default to {AssemblyName}.dat)
             var outputFileName = GetOutputFileName(configOptions, assemblyName);
             
-            // Extract resource keys
+            // Extract resource keys using ResourceKeyHelper
             var resourceKeys = filteredResourceFiles
-                .Select(f => GetResourceKey(f.Path))
+                .Select(f => global::LuYao.ResourcePacker.ResourceKeyHelper.GetResourceKey(f.Path))
                 .Where(k => !string.IsNullOrEmpty(k))
                 .OrderBy(k => k)
                 .Distinct()
@@ -78,13 +80,6 @@ namespace LuYao.ResourcePacker.SourceGenerator
 
             // Add source to compilation
             context.AddSource($"{className}.g.cs", SourceText.From(source, Encoding.UTF8));
-        }
-
-        private static string GetResourceKey(string filePath)
-        {
-            var fileName = Path.GetFileName(filePath);
-            var firstDot = fileName.IndexOf('.');
-            return firstDot > 0 ? fileName.Substring(0, firstDot) : fileName;
         }
 
         private static string GetRootNamespace(Compilation compilation)
@@ -101,19 +96,36 @@ namespace LuYao.ResourcePacker.SourceGenerator
             return compilation.AssemblyName ?? "Assembly";
         }
 
-        private static string GetVisibility(AnalyzerConfigOptionsProvider configOptions)
+        private static string GetResourceDirectory(AnalyzerConfigOptionsProvider configOptions)
         {
-            // Try to get the visibility setting from global analyzer config
-            if (configOptions.GlobalOptions.TryGetValue("build_property.ResourcePackerAccessibility", out var visibility))
+            // Try to get the resource directory from global analyzer config
+            if (configOptions.GlobalOptions.TryGetValue("build_property.ResourcePackerDirectory", out var directory))
             {
-                if (visibility.Equals("public", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(directory))
                 {
-                    return "public";
+                    return directory;
                 }
             }
             
-            // Default to internal
-            return "internal";
+            // Default to "Resources"
+            return "Resources";
+        }
+
+        private static bool IsInResourceDirectory(string filePath, string resourceDirectory)
+        {
+            if (string.IsNullOrEmpty(filePath) || string.IsNullOrEmpty(resourceDirectory))
+            {
+                return false;
+            }
+
+            // Normalize paths for comparison
+            var normalizedPath = filePath.Replace('\\', '/');
+            var normalizedDir = resourceDirectory.Replace('\\', '/');
+            
+            // Check if the file path contains the resource directory
+            // Handle both "Resources" and "Resources/" formats
+            return normalizedPath.Contains($"/{normalizedDir}/") ||
+                   normalizedPath.EndsWith($"/{normalizedDir}");
         }
 
         private static string GetOutputFileName(AnalyzerConfigOptionsProvider configOptions, string assemblyName)
@@ -129,75 +141,6 @@ namespace LuYao.ResourcePacker.SourceGenerator
             
             // Default to {AssemblyName}.dat
             return $"{assemblyName}.dat";
-        }
-
-        private static string GetResourcePattern(AnalyzerConfigOptionsProvider configOptions)
-        {
-            // Try to get the resource pattern from global analyzer config
-            if (configOptions.GlobalOptions.TryGetValue("build_property.ResourcePackerPattern", out var pattern))
-            {
-                if (!string.IsNullOrWhiteSpace(pattern))
-                {
-                    return pattern;
-                }
-            }
-            
-            // Default to *.res.*
-            return "*.res.*";
-        }
-
-        private static bool MatchesPattern(string fileName, string pattern)
-        {
-            // Simple wildcard pattern matching
-            // Pattern format: *.res.* means anything.res.anything
-            
-            if (string.IsNullOrEmpty(fileName) || string.IsNullOrEmpty(pattern))
-            {
-                return false;
-            }
-            
-            // Split pattern by wildcard
-            var parts = pattern.Split('*');
-            
-            // If no wildcards, it's an exact match
-            if (parts.Length == 1)
-            {
-                return fileName.Equals(pattern, StringComparison.OrdinalIgnoreCase);
-            }
-            
-            // Check each part appears in sequence
-            int currentIndex = 0;
-            for (int i = 0; i < parts.Length; i++)
-            {
-                var part = parts[i];
-                if (string.IsNullOrEmpty(part))
-                {
-                    continue; // Skip empty parts from leading/trailing wildcards
-                }
-                
-                // For first part, it must be at the beginning
-                if (i == 0 && !fileName.StartsWith(part, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-                // For last part, it must be at the end
-                else if (i == parts.Length - 1 && !fileName.EndsWith(part, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-                // For middle parts, find them in sequence
-                else
-                {
-                    int index = fileName.IndexOf(part, currentIndex, StringComparison.OrdinalIgnoreCase);
-                    if (index < 0)
-                    {
-                        return false;
-                    }
-                    currentIndex = index + part.Length;
-                }
-            }
-            
-            return true;
         }
 
         private static string GenerateSourceCode(string assemblyName, string className, string rootNamespace, string visibility, string outputFileName, List<string> resourceKeys)
@@ -231,7 +174,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
             
             foreach (var key in resourceKeys)
             {
-                var safeKey = MakeSafeIdentifier(key);
+                var safeKey = key; // Already safe from ResourceKeyHelper
                 sb.AppendLine($"            /// <summary>Resource key for '{key}'</summary>");
                 sb.AppendLine($"            public const string {safeKey} = \"{key}\";");
             }
@@ -272,7 +215,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
             // Add helper methods for each resource
             foreach (var key in resourceKeys)
             {
-                var safeKey = MakeSafeIdentifier(key);
+                var safeKey = key; // Already safe from ResourceKeyHelper
                 var methodName = $"Read{Capitalize(safeKey)}";
                 var asyncMethodName = $"Read{Capitalize(safeKey)}Async";
                 
@@ -353,34 +296,6 @@ namespace LuYao.ResourcePacker.SourceGenerator
             sb.AppendLine("}"); // Close namespace
             
             return sb.ToString();
-        }
-
-        private static string MakeSafeIdentifier(string name)
-        {
-            // Replace invalid characters with underscores
-            var sb = new StringBuilder();
-            for (int i = 0; i < name.Length; i++)
-            {
-                var c = name[i];
-                if (char.IsLetterOrDigit(c) || c == '_')
-                {
-                    sb.Append(c);
-                }
-                else
-                {
-                    sb.Append('_');
-                }
-            }
-            
-            var result = sb.ToString();
-            
-            // Ensure it starts with a letter or underscore
-            if (result.Length > 0 && !char.IsLetter(result[0]) && result[0] != '_')
-            {
-                result = "_" + result;
-            }
-            
-            return result;
         }
 
         private static string Capitalize(string s)

@@ -14,17 +14,13 @@ namespace LuYao.ResourcePacker
         public const byte FormatVersion = 1;
 
         private readonly string _sourceDirectory;
-        private readonly string _pattern;
 
-        public ResourcePacker(string sourceDirectory, string pattern)
+        public ResourcePacker(string sourceDirectory)
         {
             if (string.IsNullOrEmpty(sourceDirectory))
                 throw new ArgumentNullException(nameof(sourceDirectory));
-            if (string.IsNullOrEmpty(pattern))
-                throw new ArgumentNullException(nameof(pattern));
 
             _sourceDirectory = sourceDirectory;
-            _pattern = pattern;
         }
 
         public void PackResources(string outputFilePath)
@@ -35,20 +31,18 @@ namespace LuYao.ResourcePacker
 
         private IEnumerable<ResourceFile> CollectResources()
         {
-            return Directory.GetFiles(_sourceDirectory, _pattern, SearchOption.AllDirectories)
+            if (!Directory.Exists(_sourceDirectory))
+            {
+                return Enumerable.Empty<ResourceFile>();
+            }
+
+            return Directory.GetFiles(_sourceDirectory, "*", SearchOption.AllDirectories)
                 .Select(file => new ResourceFile
                 {
                     FullPath = file,
-                    Key = GetResourceKey(file),
+                    Key = ResourceKeyHelper.GetResourceKey(file),
                     Content = File.ReadAllBytes(file)
                 });
-        }
-
-        private string GetResourceKey(string filePath)
-        {
-            var fileName = Path.GetFileName(filePath);
-            var firstDot = fileName.IndexOf('.');
-            return firstDot > 0 ? fileName.Substring(0, firstDot) : fileName;
         }
 
         private void WriteResourcePackage(string outputFilePath, IEnumerable<ResourceFile> resources)
