@@ -4,9 +4,11 @@
     <ResourcePackerEnabled Condition="'$(ResourcePackerEnabled)' == ''">true</ResourcePackerEnabled>
     <ResourcePackerPattern Condition="'$(ResourcePackerPattern)' == ''">*.res.*</ResourcePackerPattern>
     <ResourcePackerAccessibility Condition="'$(ResourcePackerAccessibility)' == ''">internal</ResourcePackerAccessibility>
+    <ResourcePackerOutputFileName Condition="'$(ResourcePackerOutputFileName)' == ''">$(AssemblyName).dat</ResourcePackerOutputFileName>
   </PropertyGroup>
   
   <ItemGroup>
     <CompilerVisibleProperty Include="ResourcePackerAccessibility" />
+    <CompilerVisibleProperty Include="ResourcePackerOutputFileName" />
   </ItemGroup>
 </Project>
