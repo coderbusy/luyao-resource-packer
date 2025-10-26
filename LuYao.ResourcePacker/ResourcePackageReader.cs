@@ -84,7 +84,7 @@ namespace LuYao.ResourcePacker
         /// </summary>
         /// <param name="resourceKey">The key of the resource to read.</param>
         /// <returns>A task that represents the asynchronous read operation.</returns>
-        public async Task<byte[]> ReadResourceAsync(string resourceKey)
+        public Task<byte[]> ReadResourceAsync(string resourceKey)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(ResourcePackageReader));
@@ -98,10 +98,18 @@ namespace LuYao.ResourcePacker
             lock (_lock)
             {
                 _fileStream.Seek(entry.Offset, SeekOrigin.Begin);
-                _fileStream.Read(buffer, 0, buffer.Length);
+                
+                int totalRead = 0;
+                while (totalRead < entry.Length)
+                {
+                    int bytesRead = _fileStream.Read(buffer, totalRead, entry.Length - totalRead);
+                    if (bytesRead == 0)
+                        throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
+                    totalRead += bytesRead;
+                }
             }
             
-            return await Task.FromResult(buffer);
+            return Task.FromResult(buffer);
         }
 
         /// <summary>

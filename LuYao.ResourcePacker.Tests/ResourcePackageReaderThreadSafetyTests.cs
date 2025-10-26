@@ -15,12 +15,12 @@ namespace LuYao.ResourcePacker.Tests
 
         public ResourcePackageReaderThreadSafetyTests()
         {
-            // 创建临时目录用于测试
+            // Create temporary directory for tests
             _tempDirectory = Path.Combine(Path.GetTempPath(), $"ResourcePackerThreadSafetyTests_{Guid.NewGuid()}");
             Directory.CreateDirectory(_tempDirectory);
             _outputPath = Path.Combine(_tempDirectory, "test.dat");
             
-            // 创建测试资源包
+            // Create test resource package
             var sourceDir = Path.Combine(Directory.GetCurrentDirectory(), "TestResources");
             var packer = new ResourcePacker(sourceDir, "*.res.*");
             packer.PackResources(_outputPath);
@@ -231,7 +231,7 @@ namespace LuYao.ResourcePacker.Tests
 
         public void Dispose()
         {
-            // 清理临时目录
+            // Clean up temporary directory
             if (Directory.Exists(_tempDirectory))
             {
                 Directory.Delete(_tempDirectory, true);
