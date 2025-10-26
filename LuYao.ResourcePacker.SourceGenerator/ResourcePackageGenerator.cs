@@ -19,7 +19,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            // Get all additional files - MSBuild targets already filter by ResourcePackerPattern
+            // Get all additional files - will be filtered by ResourcePackerPattern in Execute
             var resourceFiles = context.AdditionalTextsProvider.Collect();
 
             // Get analyzer config options
@@ -39,7 +39,15 @@ namespace LuYao.ResourcePacker.SourceGenerator
             System.Collections.Immutable.ImmutableArray<AdditionalText> resourceFiles,
             AnalyzerConfigOptionsProvider configOptions)
         {
-            if (resourceFiles.Length == 0)
+            // Get the resource pattern from analyzer config (default to *.res.*)
+            var resourcePattern = GetResourcePattern(configOptions);
+            
+            // Filter additional files to only include those matching the resource pattern
+            var filteredResourceFiles = resourceFiles
+                .Where(f => MatchesPattern(Path.GetFileName(f.Path), resourcePattern))
+                .ToList();
+            
+            if (filteredResourceFiles.Count == 0)
             {
                 return; // No resource files, nothing to generate
             }
@@ -58,7 +66,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
             var outputFileName = GetOutputFileName(configOptions, assemblyName);
             
             // Extract resource keys
-            var resourceKeys = resourceFiles
+            var resourceKeys = filteredResourceFiles
                 .Select(f => GetResourceKey(f.Path))
                 .Where(k => !string.IsNullOrEmpty(k))
                 .OrderBy(k => k)
@@ -121,6 +129,75 @@ namespace LuYao.ResourcePacker.SourceGenerator
             
             // Default to {AssemblyName}.dat
             return $"{assemblyName}.dat";
+        }
+
+        private static string GetResourcePattern(AnalyzerConfigOptionsProvider configOptions)
+        {
+            // Try to get the resource pattern from global analyzer config
+            if (configOptions.GlobalOptions.TryGetValue("build_property.ResourcePackerPattern", out var pattern))
+            {
+                if (!string.IsNullOrWhiteSpace(pattern))
+                {
+                    return pattern;
+                }
+            }
+            
+            // Default to *.res.*
+            return "*.res.*";
+        }
+
+        private static bool MatchesPattern(string fileName, string pattern)
+        {
+            // Simple wildcard pattern matching
+            // Pattern format: *.res.* means anything.res.anything
+            
+            if (string.IsNullOrEmpty(fileName) || string.IsNullOrEmpty(pattern))
+            {
+                return false;
+            }
+            
+            // Split pattern by wildcard
+            var parts = pattern.Split('*');
+            
+            // If no wildcards, it's an exact match
+            if (parts.Length == 1)
+            {
+                return fileName.Equals(pattern, StringComparison.OrdinalIgnoreCase);
+            }
+            
+            // Check each part appears in sequence
+            int currentIndex = 0;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                var part = parts[i];
+                if (string.IsNullOrEmpty(part))
+                {
+                    continue; // Skip empty parts from leading/trailing wildcards
+                }
+                
+                // For first part, it must be at the beginning
+                if (i == 0 && !fileName.StartsWith(part, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                // For last part, it must be at the end
+                else if (i == parts.Length - 1 && !fileName.EndsWith(part, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                // For middle parts, find them in sequence
+                else
+                {
+                    int index = fileName.IndexOf(part, currentIndex, StringComparison.OrdinalIgnoreCase);
+                    if (index < 0)
+                    {
+                        return false;
+                    }
+                    currentIndex = index + part.Length;
+                }
+            }
+            
+            return true;
         }
 
         private static string GenerateSourceCode(string assemblyName, string className, string rootNamespace, string visibility, string outputFileName, List<string> resourceKeys)
