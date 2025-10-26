@@ -74,24 +74,24 @@ foreach (var key in reader.ResourceKeys)
 
 ### 3. Runtime Access - Strongly-Typed API (NEW)
 
-The source generator automatically creates a static class named `{AssemblyName}DataPackage` in the project's root namespace with strongly-typed access to your resources:
+The source generator automatically creates a static class named `{AssemblyName}ResourceAccess` in the project's root namespace with strongly-typed access to your resources:
 
 ```csharp
 using LuYao.ResourcePacker;
 using YourAssembly; // Import the namespace where the generated class resides
 
 // Access resource keys as constants
-Console.WriteLine(YourAssemblyDataPackage.Keys.message);
-Console.WriteLine(YourAssemblyDataPackage.Keys.config);
-Console.WriteLine(YourAssemblyDataPackage.Keys.template);
+Console.WriteLine(YourAssemblyResourceAccess.Keys.message);
+Console.WriteLine(YourAssemblyResourceAccess.Keys.config);
+Console.WriteLine(YourAssemblyResourceAccess.Keys.template);
 
 // Read resources using generated methods
-string message = await YourAssemblyDataPackage.ReadMessageAsyncAsString();
-byte[] configBytes = await YourAssemblyDataPackage.ReadConfigAsync();
-string template = await YourAssemblyDataPackage.ReadTemplateAsyncAsString();
+string message = await YourAssemblyResourceAccess.ReadMessageAsyncAsString();
+byte[] configBytes = await YourAssemblyResourceAccess.ReadConfigAsync();
+string template = await YourAssemblyResourceAccess.ReadTemplateAsyncAsString();
 
 // Access the underlying reader if needed
-ResourcePackageReader reader = YourAssemblyDataPackage.Reader;
+ResourcePackageReader reader = YourAssemblyResourceAccess.Reader;
 ```
 
 **Benefits of the Strongly-Typed API:**
@@ -132,7 +132,7 @@ Example generated code:
 ```csharp
 namespace YourAssembly
 {
-    public static class YourAssemblyDataPackage
+    public static class YourAssemblyResourceAccess
     {
         public static class Keys
         {
