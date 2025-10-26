@@ -10,5 +10,6 @@
   <ItemGroup>
     <CompilerVisibleProperty Include="ResourcePackerAccessibility" />
     <CompilerVisibleProperty Include="ResourcePackerOutputFileName" />
+    <CompilerVisibleProperty Include="ResourcePackerPattern" />
   </ItemGroup>
 </Project>

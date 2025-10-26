@@ -93,6 +93,39 @@ namespace LuYao.ResourcePacker.Tests
             Assert.Equal(customFileName, outputFileName);
         }
 
+        [Fact]
+        public void MatchesPattern_ShouldFilterFilesByPattern()
+        {
+            // Test the logic that matches files against the resource pattern
+            var testCases = new[]
+            {
+                // Pattern: *.res.* - should match files with .res. in the middle
+                ("test.res.txt", "*.res.*", true),
+                ("message.res.json", "*.res.*", true),
+                ("config.res.xml", "*.res.*", true),
+                
+                // Should not match files without .res.
+                ("test.txt", "*.res.*", false),
+                ("message.json", "*.res.*", false),
+                ("other.xml", "*.res.*", false),
+                
+                // Edge cases
+                ("res.txt", "*.res.*", false),  // Starts with res but no prefix
+                ("test.res", "*.res.*", false),  // Ends with res but no suffix
+                (".res.", "*.res.*", true),      // Minimal valid match
+                
+                // Different patterns
+                ("test.config.json", "*.config.*", true),
+                ("test.data.xml", "*.config.*", false),
+            };
+
+            foreach (var (fileName, pattern, expected) in testCases)
+            {
+                var result = MatchesPattern(fileName, pattern);
+                Assert.Equal(expected, result);
+            }
+        }
+
         // Helper method that mimics the source generator's logic
         private string MakeSafeIdentifier(string name)
         {
@@ -119,6 +152,61 @@ namespace LuYao.ResourcePacker.Tests
             }
             
             return result;
+        }
+
+        // Helper method that mimics the source generator's pattern matching logic
+        private bool MatchesPattern(string fileName, string pattern)
+        {
+            // Simple wildcard pattern matching
+            // Pattern format: *.res.* means anything.res.anything
+            
+            if (string.IsNullOrEmpty(fileName) || string.IsNullOrEmpty(pattern))
+            {
+                return false;
+            }
+            
+            // Split pattern by wildcard
+            var parts = pattern.Split('*');
+            
+            // If no wildcards, it's an exact match
+            if (parts.Length == 1)
+            {
+                return fileName.Equals(pattern, System.StringComparison.OrdinalIgnoreCase);
+            }
+            
+            // Check each part appears in sequence
+            int currentIndex = 0;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                var part = parts[i];
+                if (string.IsNullOrEmpty(part))
+                {
+                    continue; // Skip empty parts from leading/trailing wildcards
+                }
+                
+                // For first part, it must be at the beginning
+                if (i == 0 && !fileName.StartsWith(part, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                // For last part, it must be at the end
+                else if (i == parts.Length - 1 && !fileName.EndsWith(part, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                // For middle parts, find them in sequence
+                else
+                {
+                    int index = fileName.IndexOf(part, currentIndex, System.StringComparison.OrdinalIgnoreCase);
+                    if (index < 0)
+                    {
+                        return false;
+                    }
+                    currentIndex = index + part.Length;
+                }
+            }
+            
+            return true;
         }
     }
 }
