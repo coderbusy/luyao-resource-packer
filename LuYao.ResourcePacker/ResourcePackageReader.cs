@@ -43,28 +43,28 @@ namespace LuYao.ResourcePacker
             var count = reader.ReadInt32();
 
             // Read index entries
-            var indexEntries = new List<(string Key, int OriginalLength, int StoredLength, bool IsCompressed)>();
+            var indexEntries = new List<IndexEntry>();
             for (int i = 0; i < count; i++)
             {
                 var key = reader.ReadString();
                 var originalLength = reader.ReadInt32();
                 var storedLength = reader.ReadInt32();
                 var isCompressed = reader.ReadBoolean();
-                indexEntries.Add((key, originalLength, storedLength, isCompressed));
+                indexEntries.Add(new IndexEntry(key, originalLength, storedLength, isCompressed));
             }
 
             // Calculate offsets based on the current position
             long currentOffset = fileStream.Position;
-            foreach (var (key, originalLength, storedLength, isCompressed) in indexEntries)
+            foreach (var entry in indexEntries)
             {
-                _resourceIndex[key] = new ResourceEntry
+                _resourceIndex[entry.Key] = new ResourceEntry
                 {
                     Offset = currentOffset,
-                    Length = storedLength,
-                    OriginalLength = originalLength,
-                    IsCompressed = isCompressed
+                    Length = entry.StoredLength,
+                    OriginalLength = entry.OriginalLength,
+                    IsCompressed = entry.IsCompressed
                 };
-                currentOffset += storedLength;
+                currentOffset += entry.StoredLength;
             }
         }
 
@@ -212,24 +212,10 @@ namespace LuYao.ResourcePacker
             if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
-            // For compressed resources, we need to decompress first
+            // For compressed resources, use a decompression stream
             if (entry.IsCompressed)
             {
-                var compressedData = new byte[entry.Length];
-                using (var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    fileStream.Seek(entry.Offset, SeekOrigin.Begin);
-                    int totalRead = 0;
-                    while (totalRead < entry.Length)
-                    {
-                        int bytesRead = fileStream.Read(compressedData, totalRead, entry.Length - totalRead);
-                        if (bytesRead == 0)
-                            throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
-                        totalRead += bytesRead;
-                    }
-                }
-                var decompressedData = DecompressData(compressedData);
-                return new MemoryStream(decompressedData, false);
+                return new ResourceDecompressionStream(_filePath, entry.Offset, entry.Length);
             }
 
             // Create a SubStream for streaming access without loading entire resource into memory
@@ -248,6 +234,22 @@ namespace LuYao.ResourcePacker
             using var outputStream = new MemoryStream();
             gzipStream.CopyTo(outputStream);
             return outputStream.ToArray();
+        }
+    }
+
+    internal readonly struct IndexEntry
+    {
+        public string Key { get; }
+        public int OriginalLength { get; }
+        public int StoredLength { get; }
+        public bool IsCompressed { get; }
+
+        public IndexEntry(string key, int originalLength, int storedLength, bool isCompressed)
+        {
+            Key = key;
+            OriginalLength = originalLength;
+            StoredLength = storedLength;
+            IsCompressed = isCompressed;
         }
     }
 
@@ -377,6 +379,79 @@ namespace LuYao.ResourcePacker
                 if (disposing)
                 {
                     _fileStream?.Dispose();
+                }
+                _disposed = true;
+            }
+            base.Dispose(disposing);
+        }
+    }
+
+    /// <summary>
+    /// A read-only stream that provides decompression on-the-fly for compressed resources.
+    /// This allows streaming large compressed resources without loading all data into memory.
+    /// </summary>
+    internal class ResourceDecompressionStream : Stream
+    {
+        private readonly GZipStream _gzipStream;
+        private readonly Stream _compressedSubStream;
+        private bool _disposed;
+
+        public ResourceDecompressionStream(string filePath, long offset, long compressedLength)
+        {
+            // Create a sub-stream for the compressed data
+            _compressedSubStream = new ResourceSubStream(filePath, offset, compressedLength);
+            // Wrap it in a GZipStream for decompression
+            _gzipStream = new GZipStream(_compressedSubStream, CompressionMode.Decompress, leaveOpen: false);
+        }
+
+        public override bool CanRead => !_disposed;
+        public override bool CanSeek => false; // GZipStream doesn't support seeking
+        public override bool CanWrite => false;
+        
+        public override long Length => throw new NotSupportedException("Length is not supported for compressed streams.");
+        
+        public override long Position 
+        { 
+            get => throw new NotSupportedException("Position is not supported for compressed streams.");
+            set => throw new NotSupportedException("Seeking is not supported for compressed streams.");
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(ResourceDecompressionStream));
+            
+            return _gzipStream.Read(buffer, offset, count);
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new NotSupportedException("Seeking is not supported for compressed streams.");
+        }
+
+        public override void Flush()
+        {
+            // Read-only stream, nothing to flush
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotSupportedException("Cannot set length on a read-only stream.");
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            throw new NotSupportedException("Cannot write to a read-only stream.");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _gzipStream?.Dispose();
+                    // _compressedSubStream will be disposed by _gzipStream since leaveOpen is false
                 }
                 _disposed = true;
             }
