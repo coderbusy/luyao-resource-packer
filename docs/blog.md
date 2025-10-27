@@ -1,4 +1,4 @@
-# LuYao.ResourcePacker - 优雅地管理 .NET 项目资源文件
+LuYao.ResourcePacker - 优雅地管理 .NET 项目资源文件
 
 在 .NET 项目开发中，你是否遇到过这些问题？
 
@@ -12,6 +12,11 @@
 ## 项目简介
 
 LuYao.ResourcePacker 是一个轻量级的 .NET 资源文件打包和访问库，它通过以下特性优化了资源文件的使用体验：
+
+
+[![NuGet Version](https://img.shields.io/nuget/v/LuYao.ResourcePacker)](https://www.nuget.org/packages/LuYao.ResourcePacker/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/LuYao.ResourcePacker)](https://www.nuget.org/packages/LuYao.ResourcePacker/)
+[![GitHub Stars](https://img.shields.io/github/stars/coderbusy/luyao-resource-packer?style=social)](https://github.com/coderbusy/luyao-resource-packer/stargazers)
 
 ### 核心特性
 
@@ -442,52 +447,7 @@ LuYao.ResourcePacker 使用 **MIT 协议**开源，这意味着：
 - ✅ 无需支付任何费用
 - ⚠️ 需要保留原作者版权声明
 
-### 获取支持
 
-如果在使用过程中遇到问题，可以通过以下方式获取帮助：
-
-#### 1. 查看文档
-
-- [项目主页](https://github.com/coderbusy/luyao-resource-packer)
-- [README 文档](https://github.com/coderbusy/luyao-resource-packer/blob/main/README.md)
-- [示例项目](https://github.com/coderbusy/luyao-resource-packer/tree/main/examples)
-
-#### 2. 提交 Issue
-
-在 [GitHub Issues](https://github.com/coderbusy/luyao-resource-packer/issues) 页面：
-
-- 报告 Bug
-- 请求新功能
-- 提出改进建议
-
-提交 Issue 时，请包含：
-- 问题的详细描述
-- 复现步骤
-- 预期行为和实际行为
-- 环境信息（.NET 版本、操作系统等）
-
-#### 3. 参与贡献
-
-欢迎提交 Pull Request！贡献方式包括：
-
-- 修复 Bug
-- 添加新功能
-- 改进文档
-- 优化性能
-- 增加测试用例
-
-### 项目统计
-
-[![NuGet Version](https://img.shields.io/nuget/v/LuYao.ResourcePacker)](https://www.nuget.org/packages/LuYao.ResourcePacker/)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/LuYao.ResourcePacker)](https://www.nuget.org/packages/LuYao.ResourcePacker/)
-[![GitHub Stars](https://img.shields.io/github/stars/coderbusy/luyao-resource-packer?style=social)](https://github.com/coderbusy/luyao-resource-packer/stargazers)
-
-### 相关资源
-
-- **NuGet 包**：[LuYao.ResourcePacker](https://www.nuget.org/packages/LuYao.ResourcePacker/)
-- **源代码**：[GitHub Repository](https://github.com/coderbusy/luyao-resource-packer)
-- **作者**：Soar360
-- **创建日期**：2025-10-25
 
 ## 总结
 
@@ -505,11 +465,14 @@ LuYao.ResourcePacker 为 .NET 项目提供了一个优雅、高效的资源文�
 
 无论你是开发小型工具还是大型应用，LuYao.ResourcePacker 都能帮助你更好地管理资源文件。现在就试试吧！
 
-```bash
-dotnet add package LuYao.ResourcePacker.MSBuild
-dotnet add package LuYao.ResourcePacker
-```
+
+### 相关资源
+
+- **NuGet 包**：LuYao.ResourcePacker
+   - https://www.nuget.org/packages/LuYao.ResourcePacker
+- **源代码**：GitHub Repository
+   - https://github.com/coderbusy/luyao-resource-packer
 
 ---
 
-*如果觉得这个项目有用，欢迎在 [GitHub](https://github.com/coderbusy/luyao-resource-packer) 上给个 ⭐ Star！*
+*如果觉得这个项目有用，欢迎在 GitHub ： https://github.com/coderbusy/luyao-resource-packer 上给个 ⭐ Star！*
