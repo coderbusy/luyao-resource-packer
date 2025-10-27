@@ -155,8 +155,8 @@ namespace LuYao.ResourcePacker
             // Only compress if we achieve at least 5% compression
             if (compressionRatio >= MinCompressionRatio)
             {
-                // If sample and actual are the same, return the already compressed data
-                if (ReferenceEquals(sampleData, actualData))
+                // If sample and actual are the same size, we sampled the entire file
+                if (sampleData.Length == actualData.Length)
                 {
                     return (true, sampleCompressed);
                 }
