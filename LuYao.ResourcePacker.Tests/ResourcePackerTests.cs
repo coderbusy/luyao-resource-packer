@@ -152,14 +152,17 @@ namespace LuYao.ResourcePacker.Tests
             var count = reader.ReadInt32();
             Assert.True(count > 0, "Should have at least one resource");
             
-            // Read index entries - should be sorted
+            // Read index entries - should be sorted and include compression metadata
             var keys = new System.Collections.Generic.List<string>();
             for (int i = 0; i < count; i++)
             {
                 var key = reader.ReadString();
-                var length = reader.ReadInt32();
+                var originalLength = reader.ReadInt32();
+                var storedLength = reader.ReadInt32();
+                var isCompressed = reader.ReadBoolean();
                 keys.Add(key);
-                Assert.True(length > 0, $"Resource '{key}' should have positive length");
+                Assert.True(originalLength > 0, $"Resource '{key}' should have positive original length");
+                Assert.True(storedLength > 0, $"Resource '{key}' should have positive stored length");
             }
             
             // Verify keys are sorted

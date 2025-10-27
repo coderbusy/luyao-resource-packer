@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -41,25 +42,29 @@ namespace LuYao.ResourcePacker
             // Read resource count
             var count = reader.ReadInt32();
 
-            // Read index entries (key and length only)
-            var indexEntries = new List<(string Key, int Length)>();
+            // Read index entries
+            var indexEntries = new List<(string Key, int OriginalLength, int StoredLength, bool IsCompressed)>();
             for (int i = 0; i < count; i++)
             {
                 var key = reader.ReadString();
-                var length = reader.ReadInt32();
-                indexEntries.Add((key, length));
+                var originalLength = reader.ReadInt32();
+                var storedLength = reader.ReadInt32();
+                var isCompressed = reader.ReadBoolean();
+                indexEntries.Add((key, originalLength, storedLength, isCompressed));
             }
 
             // Calculate offsets based on the current position
             long currentOffset = fileStream.Position;
-            foreach (var (key, length) in indexEntries)
+            foreach (var (key, originalLength, storedLength, isCompressed) in indexEntries)
             {
                 _resourceIndex[key] = new ResourceEntry
                 {
                     Offset = currentOffset,
-                    Length = length
+                    Length = storedLength,
+                    OriginalLength = originalLength,
+                    IsCompressed = isCompressed
                 };
-                currentOffset += length;
+                currentOffset += storedLength;
             }
         }
 
@@ -103,6 +108,12 @@ namespace LuYao.ResourcePacker
                         throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
                     totalRead += bytesRead;
                 }
+            }
+
+            // Decompress if needed
+            if (entry.IsCompressed)
+            {
+                buffer = DecompressData(buffer);
             }
             
             return Task.FromResult(buffer);
@@ -157,6 +168,12 @@ namespace LuYao.ResourcePacker
                     totalRead += bytesRead;
                 }
             }
+
+            // Decompress if needed
+            if (entry.IsCompressed)
+            {
+                buffer = DecompressData(buffer);
+            }
             
             return buffer;
         }
@@ -195,8 +212,42 @@ namespace LuYao.ResourcePacker
             if (!_resourceIndex.TryGetValue(resourceKey, out var entry))
                 throw new KeyNotFoundException($"Resource with key '{resourceKey}' not found.");
 
+            // For compressed resources, we need to decompress first
+            if (entry.IsCompressed)
+            {
+                var compressedData = new byte[entry.Length];
+                using (var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    fileStream.Seek(entry.Offset, SeekOrigin.Begin);
+                    int totalRead = 0;
+                    while (totalRead < entry.Length)
+                    {
+                        int bytesRead = fileStream.Read(compressedData, totalRead, entry.Length - totalRead);
+                        if (bytesRead == 0)
+                            throw new EndOfStreamException($"Unexpected end of stream while reading resource '{resourceKey}'.");
+                        totalRead += bytesRead;
+                    }
+                }
+                var decompressedData = DecompressData(compressedData);
+                return new MemoryStream(decompressedData, false);
+            }
+
             // Create a SubStream for streaming access without loading entire resource into memory
             return new ResourceSubStream(_filePath, entry.Offset, entry.Length);
+        }
+
+        /// <summary>
+        /// Decompresses data using GZip decompression.
+        /// </summary>
+        /// <param name="compressedData">The compressed data.</param>
+        /// <returns>The decompressed data.</returns>
+        private byte[] DecompressData(byte[] compressedData)
+        {
+            using var inputStream = new MemoryStream(compressedData);
+            using var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress);
+            using var outputStream = new MemoryStream();
+            gzipStream.CopyTo(outputStream);
+            return outputStream.ToArray();
         }
     }
 
@@ -204,6 +255,8 @@ namespace LuYao.ResourcePacker
     {
         public long Offset { get; set; }
         public int Length { get; set; }
+        public int OriginalLength { get; set; }
+        public bool IsCompressed { get; set; }
     }
 
     /// <summary>
