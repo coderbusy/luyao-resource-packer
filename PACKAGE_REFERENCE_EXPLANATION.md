@@ -61,8 +61,8 @@
    - 由于 LuYao.ResourcePacker.MSBuild 的依赖不再传递，项目需要单独引用 `LuYao.ResourcePacker` 包来获取运行时 API
    - 这样的配置：
      ```xml
-     <PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="1.0.0" />
-     <PackageReference Include="LuYao.ResourcePacker" Version="1.0.0" />
+     <PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="x.x.x" />
+     <PackageReference Include="LuYao.ResourcePacker" Version="x.x.x" />
      ```
 
 2. **每个项目需要单独引用**:
