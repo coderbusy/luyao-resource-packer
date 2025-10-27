@@ -24,7 +24,7 @@
 
   <!-- Add resource files as AdditionalFiles for source generator -->
   <ItemGroup>
-    <AdditionalFiles Include="Resources\**\*" Visible="false" />
+    <AdditionalFiles Include="Resources\**\*" Visible="true" />
   </ItemGroup>
 
   <UsingTask TaskName="LuYao.ResourcePacker.MSBuild.ResourcePackerTask" 

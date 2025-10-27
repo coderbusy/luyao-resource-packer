@@ -23,7 +23,7 @@
 
   <!-- Add resource files as AdditionalFiles for source generator -->
   <ItemGroup>
-    <AdditionalFiles Include="Resources\**\*" Visible="false" />
+    <AdditionalFiles Include="Resources\**\*" Visible="true" />
   </ItemGroup>
 
   <!-- For development with project references, manually import and override assembly path -->
