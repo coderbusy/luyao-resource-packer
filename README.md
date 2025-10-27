@@ -21,19 +21,22 @@ LuYao.ResourcePacker is a .NET library for packaging and accessing resource file
 ### Package Manager Console
 ```
 Install-Package LuYao.ResourcePacker.MSBuild
+Install-Package LuYao.ResourcePacker
 ```
 
 ### .NET CLI
 ```bash
 dotnet add package LuYao.ResourcePacker.MSBuild
+dotnet add package LuYao.ResourcePacker
 ```
 
 ### PackageReference
 ```xml
-<PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="0.1.1" />
+<PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="1.0.0" />
+<PackageReference Include="LuYao.ResourcePacker" Version="1.0.0" />
 ```
 
-> **Note**: Installing `LuYao.ResourcePacker.MSBuild` will automatically include the core `LuYao.ResourcePacker` library and the source generator as dependencies.
+> **Note**: `LuYao.ResourcePacker.MSBuild` is a development-only dependency that provides MSBuild tasks and source generators. You need to separately install `LuYao.ResourcePacker` for the runtime API. The MSBuild package will not transitively pass to projects that reference your project.
 
 ## Usage
 

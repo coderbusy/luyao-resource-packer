@@ -6,6 +6,9 @@
     <Description>MSBuild tasks for LuYao.ResourcePacker - enables automatic resource file packaging during build</Description>
     <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    
+    <!-- Mark as development dependency - this makes NuGet add PrivateAssets="all" by default -->
+    <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Reference to runtime library - will be added as a NuGet dependency -->
-    <ProjectReference Include="..\LuYao.ResourcePacker\LuYao.ResourcePacker.csproj" PrivateAssets="none" />
+    <!-- Reference to runtime library - packed into tasks folder, consumers need to reference it separately -->
+    <ProjectReference Include="..\LuYao.ResourcePacker\LuYao.ResourcePacker.csproj" PrivateAssets="all" />
     <!-- MSBuild task and Source Generator are not exposed to consumers -->
     <ProjectReference Include="..\LuYao.ResourcePacker.SourceGenerator\LuYao.ResourcePacker.SourceGenerator.csproj" PrivateAssets="all" />
   </ItemGroup>
