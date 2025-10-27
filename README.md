@@ -9,6 +9,7 @@ LuYao.ResourcePacker is a .NET library for packaging and accessing resource file
 ## Features
 
 - Pack multiple resource files into a single .dat file during build
+- **Intelligent tiered compression with GZip** - automatic compression with sampling for optimal space/performance
 - Directory-based resource scanning (default: Resources directory)
 - MSBuild integration
 - Simple runtime API for resource access
@@ -112,6 +113,35 @@ In your .csproj file:
     <ResourcePackerOutputFileName>$(AssemblyName).dat</ResourcePackerOutputFileName>
 </PropertyGroup>
 ```
+
+## Compression
+
+LuYao.ResourcePacker includes intelligent tiered compression to optimize package size while maintaining fast access:
+
+### Compression Strategy
+
+Resources are automatically compressed using GZip based on these rules:
+
+1. **Files < 255 bytes**: Not compressed (overhead exceeds benefit)
+2. **Files 255 bytes - 4KB**: Full file compression attempted, only applied if compression ratio ≥ 5%
+3. **Files > 4KB**: First 8KB sampled for compression evaluation, full file compressed if sample ratio ≥ 5%
+4. **Already compressed formats**: Automatically skipped (jpg, png, zip, mp3, mp4, pdf, fonts, etc.)
+
+### Benefits
+
+- **Automatic**: No configuration needed - compression decisions made intelligently during build
+- **Transparent**: Decompression happens automatically when reading resources
+- **Efficient**: Typical 50-80% size reduction for compressible content (text, JSON, XML, source code)
+- **Smart**: Avoids compressing already-compressed formats and small files
+
+### Technical Details
+
+- Compression algorithm: GZip
+- Minimum compression ratio: 5%
+- Streaming decompression: Large compressed resources can be streamed without loading entire content into memory
+- Thread-safe: Concurrent access to compressed resources is fully supported
+
+The compression is completely transparent to your code - no API changes required.
 
 ## How the Source Generator Works
 
