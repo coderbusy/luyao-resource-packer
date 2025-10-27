@@ -57,7 +57,10 @@ Install-Package LuYao.ResourcePacker
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="1.0.0" />
+  <PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="1.0.0">
+    <PrivateAssets>all</PrivateAssets>
+    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+  </PackageReference>
   <PackageReference Include="LuYao.ResourcePacker" Version="1.0.0" />
 </ItemGroup>
 ```
@@ -247,19 +250,18 @@ Resources/
 
 #### 2. 组织资源文件结构
 
-使用子目录组织相关资源，生成器会保留目录结构：
+将相关资源放在同一目录下，方便管理：
 
 ```
 Resources/
-├── templates/
-│   ├── email.html
-│   └── report.html
-├── configs/
-│   ├── dev.json
-│   └── prod.json
-└── data/
-    └── seed.sql
+├── app-config.json
+├── email-template.html
+├── report-template.html
+├── user-data.xml
+└── seed.sql
 ```
+
+**注意**：资源键名只基于文件名（不含扩展名），不包含子目录路径。如果使用子目录组织资源，请确保不同子目录下的文件名不重复，否则会导致键名冲突。
 
 #### 3. 选择合适的读取方式
 
@@ -281,15 +283,46 @@ var content = await reader.ReadResourceAsStringAsync("app-config");
 
 #### 5. 处理多项目场景
 
-在解决方案中有多个项目时，每个项目都有自己的 `R` 类：
-
+**同一项目内的资源访问**：
 ```csharp
-// Project1 的资源
-var data1 = await Project1.R.ReadDataAsyncAsString();
-
-// Project2 的资源
-var data2 = await Project2.R.ReadConfigAsyncAsString();
+// 在项目内部直接使用 R 类
+var data = await R.ReadDataAsyncAsString();
 ```
+
+**跨程序集访问的限制**：
+
+生成的 `R` 类默认使用 `internal` 可见性修饰符，这意味着它只能在定义它的程序集（项目）内部访问。如果你需要在其他项目中访问某个项目的资源，有以下几种方案：
+
+1. **推荐方案**：在每个需要资源的项目中独立管理资源
+   ```csharp
+   // Project1 中
+   var config1 = await R.ReadConfigAsyncAsString();
+   
+   // Project2 中  
+   var config2 = await R.ReadConfigAsyncAsString();
+   ```
+
+2. **传递数据而非 R 类**：如果确实需要跨项目共享资源，可以在资源所在的项目中读取后传递数据
+   ```csharp
+   // 在 LibraryProject 中提供公共方法
+   public class ResourceProvider
+   {
+       public static async Task<string> GetConfigAsync()
+       {
+           return await R.ReadConfigAsyncAsString();
+       }
+   }
+   
+   // 在 ConsumerProject 中使用
+   var config = await LibraryProject.ResourceProvider.GetConfigAsync();
+   ```
+
+3. **使用传统 API**：跨程序集访问时使用 `ResourcePackageReader`
+   ```csharp
+   // 在其他项目中手动加载 .dat 文件
+   var reader = new ResourcePackageReader("path/to/LibraryProject.dat");
+   var data = await reader.ReadResourceAsStringAsync("config");
+   ```
 
 ### 注意事项
 
