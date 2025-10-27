@@ -16,7 +16,7 @@ if (!File.Exists(datFile))
 Console.WriteLine($"Reading resources from: {datFile}");
 Console.WriteLine();
 
-using var reader = new ResourcePackageReader(datFile);
+var reader = new ResourcePackageReader(datFile);
 
 // List all resources
 Console.WriteLine("Available resources:");

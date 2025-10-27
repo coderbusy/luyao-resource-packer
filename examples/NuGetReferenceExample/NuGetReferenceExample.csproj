@@ -5,17 +5,59 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
+    <ResourcePackerEnabled>true</ResourcePackerEnabled>
     <ResourcePackerDirectory>Resources</ResourcePackerDirectory>
+    <ResourcePackerOutputFileName>$(AssemblyName).dat</ResourcePackerOutputFileName>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LuYao.ResourcePacker" Version="1.0.0" />
-    <PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="1.0.0" />
+    <ProjectReference Include="..\..\LuYao.ResourcePacker\LuYao.ResourcePacker.csproj" />
+    <ProjectReference Include="..\..\LuYao.ResourcePacker.MSBuild\LuYao.ResourcePacker.MSBuild.csproj" />
+    <ProjectReference Include="..\..\LuYao.ResourcePacker.SourceGenerator\LuYao.ResourcePacker.SourceGenerator.csproj" 
+                      OutputItemType="Analyzer" 
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="Resources\**\*" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+  <!-- 
+    NOTE: This example uses project references to demonstrate the library from source.
+    For external projects consuming the NuGet package, the MSBuild targets are automatically
+    imported and you don't need the UsingTask and Target import below.
+    See the main README.md for instructions on using the NuGet package.
+  -->
+  <UsingTask TaskName="LuYao.ResourcePacker.MSBuild.ResourcePackerTask" 
+             AssemblyFile="..\..\LuYao.ResourcePacker.MSBuild\bin\$(Configuration)\netstandard2.0\LuYao.ResourcePacker.MSBuild.dll" />
+  
+  <Import Project="..\..\LuYao.ResourcePacker.MSBuild\build\LuYao.ResourcePacker.MSBuild.props" />
+  
+  <!-- Override the targets to use local source generator for development -->
+  <Target Name="PackResources" BeforeTargets="AssignTargetPaths" Condition="'$(ResourcePackerEnabled)' == 'true'">
+    <PropertyGroup>
+      <ResourcePackerOutputFileName Condition="'$(ResourcePackerOutputFileName)' == ''">$(AssemblyName).dat</ResourcePackerOutputFileName>
+    </PropertyGroup>
+    <ResourcePackerTask
+      ProjectDir="$(ProjectDir)"
+      OutputPath="$(OutputPath)"
+      AssemblyName="$(AssemblyName)"
+      ResourceDirectory="$(ResourcePackerDirectory)"
+      OutputFileName="$(ResourcePackerOutputFileName)" />
+      
+    <!-- Add .dat file to None so it gets copied to referencing projects -->
+    <ItemGroup>
+      <None Include="$(OutputPath)$(ResourcePackerOutputFileName)">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <Link>$(ResourcePackerOutputFileName)</Link>
+      </None>
+    </ItemGroup>
+  </Target>
+
+  <!-- Add resource files as AdditionalFiles for source generator -->
+  <ItemGroup>
+    <AdditionalFiles Include="Resources\**\*" Visible="false" />
   </ItemGroup>
 
 </Project>

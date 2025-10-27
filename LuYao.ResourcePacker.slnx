@@ -11,6 +11,7 @@
     <Project Path="examples/Lib1/Lib1.csproj" />
     <Project Path="examples/Lib2/Lib2.csproj" />
     <Project Path="examples/Lib3/Lib3.csproj" />
+    <Project Path="examples/NuGetReferenceExample/NuGetReferenceExample.csproj" />
     <Project Path="examples/RootNamespaceTest/RootNamespaceTest.csproj" />
   </Folder>
   <Project Path="LuYao.ResourcePacker.MSBuild/LuYao.ResourcePacker.MSBuild.csproj" />
