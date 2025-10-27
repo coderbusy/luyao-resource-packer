@@ -13,11 +13,6 @@ LuYao.ResourcePacker - 优雅地管理 .NET 项目资源文件
 
 LuYao.ResourcePacker 是一个轻量级的 .NET 资源文件打包和访问库，它通过以下特性优化了资源文件的使用体验：
 
-
-[![NuGet Version](https://img.shields.io/nuget/v/LuYao.ResourcePacker)](https://www.nuget.org/packages/LuYao.ResourcePacker/)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/LuYao.ResourcePacker)](https://www.nuget.org/packages/LuYao.ResourcePacker/)
-[![GitHub Stars](https://img.shields.io/github/stars/coderbusy/luyao-resource-packer?style=social)](https://github.com/coderbusy/luyao-resource-packer/stargazers)
-
 ### 核心特性
 
 1. **构建时自动打包**：在编译时自动将多个资源文件打包成单个 .dat 文件，避免 DLL 体积膨胀
@@ -55,20 +50,6 @@ dotnet add package LuYao.ResourcePacker
 ```powershell
 Install-Package LuYao.ResourcePacker.MSBuild
 Install-Package LuYao.ResourcePacker
-```
-
-### 方式三：在 .csproj 文件中直接引用
-
-编辑项目的 `.csproj` 文件，添加以下内容：
-
-```xml
-<ItemGroup>
-  <PackageReference Include="LuYao.ResourcePacker.MSBuild" Version="1.0.0">
-    <PrivateAssets>all</PrivateAssets>
-    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-  </PackageReference>
-  <PackageReference Include="LuYao.ResourcePacker" Version="1.0.0" />
-</ItemGroup>
 ```
 
 ### 包说明
