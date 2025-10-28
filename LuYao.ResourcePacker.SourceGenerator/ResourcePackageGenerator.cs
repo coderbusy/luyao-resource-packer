@@ -219,6 +219,8 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 var safeKey = key; // Already safe from ResourceKeyHelper
                 var methodName = $"Read{Capitalize(safeKey)}";
                 var asyncMethodName = $"Read{Capitalize(safeKey)}Async";
+                var asyncStringMethodName = $"Read{Capitalize(safeKey)}AsStringAsync";
+                var stringMethodName = $"Read{Capitalize(safeKey)}AsString";
                 
                 // Async byte array method
                 sb.AppendLine($"        /// <summary>");
@@ -244,7 +246,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 sb.AppendLine($"        /// <summary>");
                 sb.AppendLine($"        /// Reads the '{key}' resource as a string asynchronously using UTF-8 encoding.");
                 sb.AppendLine($"        /// </summary>");
-                sb.AppendLine($"        public static System.Threading.Tasks.Task<string> Read{Capitalize(safeKey)}AsStringAsync()");
+                sb.AppendLine($"        public static System.Threading.Tasks.Task<string> {asyncStringMethodName}()");
                 sb.AppendLine($"        {{");
                 sb.AppendLine($"            return Reader.ReadResourceAsStringAsync(Keys.{safeKey});");
                 sb.AppendLine($"        }}");
@@ -255,7 +257,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 sb.AppendLine($"        /// Reads the '{key}' resource as a string asynchronously using the specified encoding.");
                 sb.AppendLine($"        /// </summary>");
                 sb.AppendLine($"        /// <param name=\"encoding\">The encoding to use when converting bytes to string.</param>");
-                sb.AppendLine($"        public static System.Threading.Tasks.Task<string> Read{Capitalize(safeKey)}AsStringAsync(System.Text.Encoding encoding)");
+                sb.AppendLine($"        public static System.Threading.Tasks.Task<string> {asyncStringMethodName}(System.Text.Encoding encoding)");
                 sb.AppendLine($"        {{");
                 sb.AppendLine($"            return Reader.ReadResourceAsStringAsync(Keys.{safeKey}, encoding);");
                 sb.AppendLine($"        }}");
@@ -265,7 +267,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 sb.AppendLine($"        /// <summary>");
                 sb.AppendLine($"        /// Reads the '{key}' resource as a string synchronously using UTF-8 encoding.");
                 sb.AppendLine($"        /// </summary>");
-                sb.AppendLine($"        public static string {methodName}AsString()");
+                sb.AppendLine($"        public static string {stringMethodName}()");
                 sb.AppendLine($"        {{");
                 sb.AppendLine($"            return Reader.ReadResourceAsString(Keys.{safeKey});");
                 sb.AppendLine($"        }}");
@@ -276,7 +278,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 sb.AppendLine($"        /// Reads the '{key}' resource as a string synchronously using the specified encoding.");
                 sb.AppendLine($"        /// </summary>");
                 sb.AppendLine($"        /// <param name=\"encoding\">The encoding to use when converting bytes to string.</param>");
-                sb.AppendLine($"        public static string {methodName}AsString(System.Text.Encoding encoding)");
+                sb.AppendLine($"        public static string {stringMethodName}(System.Text.Encoding encoding)");
                 sb.AppendLine($"        {{");
                 sb.AppendLine($"            return Reader.ReadResourceAsString(Keys.{safeKey}, encoding);");
                 sb.AppendLine($"        }}");
