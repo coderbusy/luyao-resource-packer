@@ -121,9 +121,9 @@ Console.WriteLine(R.Keys.config);
 Console.WriteLine(R.Keys.template);
 
 // 使用生成的强类型方法读取资源
-string message = await R.ReadMessageAsyncAsString();
+string message = await R.ReadMessageAsStringAsync();
 byte[] configBytes = await R.ReadConfigAsync();
-string template = await R.ReadTemplateAsyncAsString();
+string template = await R.ReadTemplateAsStringAsync();
 
 // 如果需要，也可以访问底层的 Reader
 ResourcePackageReader reader = R.Reader;
@@ -266,7 +266,7 @@ using var stream = reader.GetStream("large-text-file");
 3. **代码生成**：生成包含以下内容的 `R.g.cs` 文件：
    - `R.Keys` 嵌套类：包含所有资源键常量
    - `R.Reader` 静态属性：提供 `ResourcePackageReader` 实例
-   - 强类型方法：为每个资源生成 `ReadXxxAsync()` 和 `ReadXxxAsyncAsString()` 方法
+   - 强类型方法：为每个资源生成 `ReadXxxAsync()` 和 `ReadXxxAsStringAsync()` 方法
 
 ### 命名空间处理
 
@@ -326,7 +326,7 @@ Resources/
 
 ```csharp
 // ✅ 推荐：强类型，有智能提示
-var content = await R.ReadAppConfigAsyncAsString();
+var content = await R.ReadAppConfigAsStringAsync();
 
 // ❌ 不推荐：魔法字符串，容易出错
 var content = await reader.ReadResourceAsStringAsync("app-config");
@@ -337,7 +337,7 @@ var content = await reader.ReadResourceAsStringAsync("app-config");
 **同一项目内的资源访问**：
 ```csharp
 // 在项目内部直接使用 R 类
-var data = await R.ReadDataAsyncAsString();
+var data = await R.ReadDataAsStringAsync();
 ```
 
 **跨程序集访问的限制**：
@@ -347,10 +347,10 @@ var data = await R.ReadDataAsyncAsString();
 1. **推荐方案**：在每个需要资源的项目中独立管理资源
    ```csharp
    // Project1 中
-   var config1 = await R.ReadConfigAsyncAsString();
+   var config1 = await R.ReadConfigAsStringAsync();
    
    // Project2 中  
-   var config2 = await R.ReadConfigAsyncAsString();
+   var config2 = await R.ReadConfigAsStringAsync();
    ```
 
 2. **传递数据而非 R 类**：如果确实需要跨项目共享资源，可以在资源所在的项目中读取后传递数据
@@ -360,7 +360,7 @@ var data = await R.ReadDataAsyncAsString();
    {
        public static async Task<string> GetConfigAsync()
        {
-           return await R.ReadConfigAsyncAsString();
+           return await R.ReadConfigAsStringAsync();
        }
    }
    
