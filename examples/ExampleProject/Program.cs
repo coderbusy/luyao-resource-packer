@@ -54,12 +54,12 @@ class Program
         
         // Read resources using generated methods
         Console.WriteLine("--- Reading 'config' using generated method ---");
-        string config = await R.ReadConfigAsyncAsString();
+        string config = await R.ReadConfigAsStringAsync();
         Console.WriteLine(config);
         Console.WriteLine();
         
         Console.WriteLine("--- Reading 'message' using generated method ---");
-        string messageGenerated = await R.ReadMessageAsyncAsString();
+        string messageGenerated = await R.ReadMessageAsStringAsync();
         Console.WriteLine(messageGenerated);
         Console.WriteLine();
         

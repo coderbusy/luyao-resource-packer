@@ -31,10 +31,10 @@ namespace Popcorn.Toolkit
             // Test reading resources
             try
             {
-                var sampleText = await R.ReadSampleAsyncAsString();
+                var sampleText = await R.ReadSampleAsStringAsync();
                 Console.WriteLine($"Sample resource content: {sampleText}");
                 
-                var configJson = await R.ReadConfigAsyncAsString();
+                var configJson = await R.ReadConfigAsStringAsync();
                 Console.WriteLine($"Config resource content: {configJson}");
                 
                 Console.WriteLine();

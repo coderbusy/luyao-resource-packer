@@ -82,9 +82,9 @@ Console.WriteLine(R.Keys.config);
 Console.WriteLine(R.Keys.template);
 
 // Read resources using generated methods
-string message = await R.ReadMessageAsyncAsString();
+string message = await R.ReadMessageAsStringAsync();
 byte[] configBytes = await R.ReadConfigAsync();
-string template = await R.ReadTemplateAsyncAsString();
+string template = await R.ReadTemplateAsStringAsync();
 
 // Access the underlying reader if needed
 ResourcePackageReader reader = R.Reader;
@@ -170,10 +170,10 @@ namespace YourAssembly
         public static ResourcePackageReader Reader { get; }
         
         public static Task<byte[]> ReadTestAsync() { ... }
-        public static Task<string> ReadTestAsyncAsString() { ... }
+        public static Task<string> ReadTestAsStringAsync() { ... }
         
         public static Task<byte[]> ReadConfigAsync() { ... }
-        public static Task<string> ReadConfigAsyncAsString() { ... }
+        public static Task<string> ReadConfigAsStringAsync() { ... }
     }
 }
 ```
