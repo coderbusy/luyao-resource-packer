@@ -11,7 +11,7 @@ When a project sets `<RootNamespace>Popcorn.Toolkit</RootNamespace>` in its .csp
 The project is configured with:
 - **AssemblyName**: RootNamespaceTest
 - **RootNamespace**: Popcorn.Toolkit
-- **Resources**: Contains sample.txt and config.json
+- **Attachments**: Contains sample.txt and config.json
 
 ## Expected Behavior
 

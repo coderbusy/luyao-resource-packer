@@ -39,7 +39,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
             System.Collections.Immutable.ImmutableArray<AdditionalText> resourceFiles,
             AnalyzerConfigOptionsProvider configOptions)
         {
-            // Get the resource directory from analyzer config (default to "Resources")
+            // Get the resource directory from analyzer config (default to "Attachments")
             var resourceDirectory = GetResourceDirectory(configOptions);
             
             // Filter additional files to only include those in the resource directory
@@ -108,8 +108,8 @@ namespace LuYao.ResourcePacker.SourceGenerator
                 }
             }
             
-            // Default to "Resources"
-            return "Resources";
+            // Default to "Attachments"
+            return "Attachments";
         }
 
         private static bool IsInResourceDirectory(string filePath, string resourceDirectory)
@@ -124,7 +124,7 @@ namespace LuYao.ResourcePacker.SourceGenerator
             var normalizedDir = resourceDirectory.Replace('\\', '/');
             
             // Check if the file path contains the resource directory
-            // Handle both "Resources" and "Resources/" formats
+            // Handle both with and without trailing slash (e.g., "Attachments" and "Attachments/")
             return normalizedPath.Contains($"/{normalizedDir}/") ||
                    normalizedPath.EndsWith($"/{normalizedDir}");
         }

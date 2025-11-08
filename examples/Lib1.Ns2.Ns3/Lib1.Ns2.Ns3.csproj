@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
 		<ResourcePackerEnabled>true</ResourcePackerEnabled>
-		<ResourcePackerDirectory>Resources</ResourcePackerDirectory>
+		<ResourcePackerDirectory>Attachments</ResourcePackerDirectory>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -18,12 +18,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="Resources\**\*" CopyToOutputDirectory="Never" />
+		<None Include="Attachments\**\*" CopyToOutputDirectory="Never" />
 	</ItemGroup>
 
 	<!-- Add resource files as AdditionalFiles for source generator -->
 	<ItemGroup>
-		<AdditionalFiles Include="Resources\**\*" Visible="true" />
+		<AdditionalFiles Include="Attachments\**\*" Visible="true" />
 	</ItemGroup>
 
 	<!-- For development with project references, manually import and override assembly path -->
