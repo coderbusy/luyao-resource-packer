@@ -8,7 +8,7 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>Popcorn.Toolkit</RootNamespace>
     <ResourcePackerEnabled>true</ResourcePackerEnabled>
-    <ResourcePackerDirectory>Resources</ResourcePackerDirectory>
+    <ResourcePackerDirectory>Assets</ResourcePackerDirectory>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,12 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Resources\**\*" CopyToOutputDirectory="Never" />
+    <None Include="Assets\**\*" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
   <!-- Add resource files as AdditionalFiles for source generator -->
   <ItemGroup>
-    <AdditionalFiles Include="Resources\**\*" Visible="false" />
+    <AdditionalFiles Include="Assets\**\*" Visible="false" />
   </ItemGroup>
 
   <!-- For development with project references, manually import and override assembly path -->

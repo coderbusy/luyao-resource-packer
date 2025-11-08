@@ -6,7 +6,7 @@ This is a console application demonstrating how to use the LuYao.ResourcePacker 
 
 ## What This Example Demonstrates
 
-1. **Resource File Setup**: Place resource files in a `Resources` folder with the `.res.` pattern in the filename (e.g., `message.res.json`, `config.res.json`, `template.res.html`)
+1. **Resource File Setup**: Place resource files in an `Assets` folder (e.g., `message.json`, `config.json`, `template.html`)
 
 2. **Automatic Build-Time Packing**: During build, all `.res.*` files are automatically packed into a single `.dat` file
 
@@ -18,10 +18,10 @@ This is a console application demonstrating how to use the LuYao.ResourcePacker 
 ExampleProject/
 ├── ExampleProject.csproj    # Project configuration with ResourcePacker integration
 ├── Program.cs               # Main application demonstrating resource access
-├── Resources/               # Directory containing resource files
-│   ├── message.res.json     # JSON resource with greeting and features
-│   ├── config.res.json      # JSON resource with configuration
-│   └── template.res.html    # HTML template resource
+├── Assets/                  # Directory containing resource files
+│   ├── message.json         # JSON resource with greeting and features
+│   ├── config.json          # JSON resource with configuration
+│   └── template.html        # HTML template resource
 └── README.md               # This file
 ```
 
@@ -44,8 +44,8 @@ ExampleProject/
 
 ## What Happens During Build
 
-1. The MSBuild integration scans for files matching the pattern `*.res.*`
-2. All matching files are packed into `ExampleProject.dat`
+1. The MSBuild integration scans for files in the `Assets` directory
+2. All files are packed into `ExampleProject.dat`
 3. The `.dat` file is copied to the output directory
 4. At runtime, the application reads resources from the `.dat` file
 
@@ -101,7 +101,7 @@ If you're creating your own project using LuYao.ResourcePacker, follow these ste
    dotnet add package LuYao.ResourcePacker
    ```
 
-2. Add resource files with the `.res.` pattern to your project
+2. Add resource files to the `Assets` directory in your project
 
 3. The MSBuild integration will automatically pack your resources during build
 
@@ -119,7 +119,7 @@ The example project uses the following MSBuild properties in `ExampleProject.csp
 ```
 
 You can also customize:
-- `ResourcePackerPattern` - Custom file pattern (default: `*.res.*`)
+- `ResourcePackerDirectory` - Custom resource directory (default: `Assets`)
 - `ResourcePackerOutputFileName` - Custom output filename (default: `$(AssemblyName).dat`)
 
 ## Learn More
