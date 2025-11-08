@@ -16,7 +16,7 @@ namespace LuYao.ResourcePacker.MSBuild
         [Required]
         public string AssemblyName { get; set; }
 
-        public string ResourceDirectory { get; set; } = "Assets";
+        public string ResourceDirectory { get; set; } = "Attachments";
 
         public string OutputFileName { get; set; }
 

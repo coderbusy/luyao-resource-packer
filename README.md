@@ -10,7 +10,7 @@ LuYao.ResourcePacker is a .NET library for packaging and accessing resource file
 
 - Pack multiple resource files into a single .dat file during build
 - **Intelligent tiered compression with GZip** - automatic compression with sampling for optimal space/performance
-- Directory-based resource scanning (default: Assets directory)
+- Directory-based resource scanning (default: Attachments directory)
 - MSBuild integration
 - Simple runtime API for resource access
 - Async support
@@ -35,9 +35,9 @@ dotnet add package LuYao.ResourcePacker
 
 ### 1. Basic Setup
 
-Place your resource files in the `Assets` directory:
+Place your resource files in the `Attachments` directory:
 ```
-Assets/
+Attachments/
   ├── message.json
   ├── config.txt
   └── template.html
@@ -45,7 +45,7 @@ Assets/
 
 The resources will be automatically packed into a .dat file during build.
 
-> **Note**: The default directory was changed from `Resources` to `Assets` to avoid conflicts with C# .resx files, which typically use the `Resources` directory. If you prefer to use `Resources` or any other directory name, you can configure it in your .csproj file (see Configuration section below).
+> **Note**: The default directory was changed from `Resources` to `Attachments` to avoid conflicts with C# .resx files, which typically use the `Resources` directory. If you prefer to use `Resources` or any other directory name, you can configure it in your .csproj file (see Configuration section below).
 
 ### 2. Runtime Access - Original API
 
@@ -108,8 +108,8 @@ In your .csproj file:
     <!-- Enable/disable resource packing -->
     <ResourcePackerEnabled>true</ResourcePackerEnabled>
     
-    <!-- Custom resource directory (default: Assets) -->
-    <ResourcePackerDirectory>Assets</ResourcePackerDirectory>
+    <!-- Custom resource directory (default: Attachments) -->
+    <ResourcePackerDirectory>Attachments</ResourcePackerDirectory>
     
     <!-- Custom output filename -->
     <ResourcePackerOutputFileName>$(AssemblyName).dat</ResourcePackerOutputFileName>

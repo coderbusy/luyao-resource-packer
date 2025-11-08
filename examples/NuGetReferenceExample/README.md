@@ -15,7 +15,7 @@ Alternatively, use the published NuGet package version once available.
 NuGetReferenceExample/
 ├── NuGetReferenceExample.csproj  # Project file with NuGet package reference
 ├── Program.cs                     # Application code
-├── Assets/
+├── Attachments/
 │   └── config.json              # Resource file (JSON)
 └── README.md
 ```
@@ -28,11 +28,11 @@ NuGetReferenceExample/
 
 2. **Automatic Build Integration**: The MSBuild targets and props files are automatically imported by NuGet, so you don't need to manually configure any build tasks.
 
-3. **Resource Directory**: Files in the `Assets` directory are automatically packed into a `.dat` file during build.
+3. **Resource Directory**: Files in the `Attachments` directory are automatically packed into a `.dat` file during build.
 
 4. **Configuration**: You can customize the behavior using MSBuild properties:
    - `ResourcePackerEnabled`: Enable/disable resource packing (default: `true`)
-   - `ResourcePackerDirectory`: Resource directory name (default: `Assets`)
+   - `ResourcePackerDirectory`: Resource directory name (default: `Attachments`)
    - `ResourcePackerOutputFileName`: Output filename (default: `$(AssemblyName).dat`)
 
 ## Building (with local NuGet package)

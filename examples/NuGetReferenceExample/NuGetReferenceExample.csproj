@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ResourcePackerEnabled>true</ResourcePackerEnabled>
-    <ResourcePackerDirectory>Assets</ResourcePackerDirectory>
+    <ResourcePackerDirectory>Attachments</ResourcePackerDirectory>
     <ResourcePackerOutputFileName>$(AssemblyName).dat</ResourcePackerOutputFileName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Assets\**\*\*" CopyToOutputDirectory="Never" />
+    <None Include="Attachments\**\*" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
   <!-- 
@@ -57,7 +57,7 @@
 
   <!-- Add resource files as AdditionalFiles for source generator -->
   <ItemGroup>
-    <AdditionalFiles Include="Assets\**\*\*" Visible="false" />
+    <AdditionalFiles Include="Attachments\**\*" Visible="false" />
   </ItemGroup>
 
 </Project>
